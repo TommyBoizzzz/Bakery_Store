@@ -22,9 +22,6 @@ while ($row = $result->fetch_assoc()) {
     }
 }
 $categories = array_keys($categories);
-
-// Cart count
-$cartCount = isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart'], 'qty')) : 0;
 ?>
 
 <style>
@@ -51,14 +48,10 @@ $cartCount = isset($_SESSION['cart']) ? array_sum(array_column($_SESSION['cart']
 .btn-cart{background:#4b2e2e;}
 body{ overflow-y:scroll; }
 
-.cart-badge{ max-width:1200px;margin:10px auto;text-align:right;padding:0 15px; }
-.cart-badge a{ text-decoration:none; color:#4b2e2e; font-weight:bold; }
+
 </style>
 
-<!-- CART BADGE -->
-<div class="cart-badge">
-    <a href="cart.php">🛒 Cart (<?php echo $cartCount; ?>)</a>
-</div>
+
 
 <!-- SEARCH + CATEGORY -->
 <div class="filter-box">
