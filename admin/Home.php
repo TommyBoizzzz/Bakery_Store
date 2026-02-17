@@ -172,7 +172,7 @@ html, body {
         <div class="card">
             <h3>🛒 Orders</h3>
             <p>View customer orders</p>
-            <a href="#">View</a>
+            <a href="orders.php">View</a>
         </div>
         <div class="card">
             <h3>📊 Reports</h3>

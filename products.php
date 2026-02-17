@@ -1,7 +1,7 @@
 <?php
 session_start();
-include 'includes/header.php';
 include 'config/db.php';
+include 'includes/header.php';
 
 // Fetch products with categories
 $sql = "
@@ -14,17 +14,15 @@ $result = $conn->query($sql);
 
 $products = [];
 $categories = [];
-
 while ($row = $result->fetch_assoc()) {
     $products[] = $row;
-    if ($row['category_name']) {
-        $categories[$row['category_name']] = true;
-    }
+    if ($row['category_name']) $categories[$row['category_name']] = true;
 }
 $categories = array_keys($categories);
 ?>
 
 <style>
+/* same styles as your last product.php */
 .filter-box{max-width:1200px;margin:20px auto;padding:0 15px;}
 .search-input{width:100%;padding:10px 15px;border-radius:20px;border:1px solid #c19a6b;outline:none;font-size:14px;margin-bottom:10px;height:40px;}
 .search-input:focus{ border-color:#8b5e3c; }
@@ -47,13 +45,8 @@ $categories = array_keys($categories);
 .btn-view{background:#8b5e3c;}
 .btn-cart{background:#4b2e2e;}
 body{ overflow-y:scroll; }
-
-
 </style>
 
-
-
-<!-- SEARCH + CATEGORY -->
 <div class="filter-box">
     <input type="text" id="searchBox" class="search-input" placeholder="Search cakes...">
     <div class="category-tabs" id="categoryTabs">
@@ -64,7 +57,6 @@ body{ overflow-y:scroll; }
     </div>
 </div>
 
-<!-- PRODUCTS -->
 <section class="products" id="productList">
 <?php foreach($products as $row): ?>
     <div class="product"
@@ -79,7 +71,6 @@ body{ overflow-y:scroll; }
             </div>
             <div class="price">$<?php echo number_format($row['price'],2); ?></div>
 
-            <!-- ADD TO CART FORM -->
             <form method="POST" action="cart.php">
                 <input type="hidden" name="product_id" value="<?php echo $row['id']; ?>">
                 <button type="submit" name="add_to_cart" class="btn btn-cart">Add to Cart</button>
@@ -92,13 +83,13 @@ body{ overflow-y:scroll; }
 <script>
 // SEARCH + CATEGORY FILTER
 const searchBox = document.getElementById('searchBox');
-const products = document.querySelectorAll('.product');
+const productsList = document.querySelectorAll('.product');
 const categoryButtons = document.querySelectorAll('.category-tabs button');
 let selectedCategory = "all";
 
 function applyFilters(){
     const searchValue = searchBox.value.toLowerCase();
-    products.forEach(p => {
+    productsList.forEach(p => {
         const nameMatch = p.dataset.name.includes(searchValue);
         const categoryMatch = selectedCategory==="all" || p.dataset.category===selectedCategory;
         p.style.display = (nameMatch && categoryMatch)?'':'none';
@@ -114,14 +105,6 @@ categoryButtons.forEach(btn=>{
         applyFilters();
     });
 });
-
-// DRAG SCROLL
-const slider = document.getElementById('categoryTabs');
-let isDown=false, startX, scrollLeft;
-slider.addEventListener('mousedown', e=>{ isDown=true; startX=e.pageX-slider.offsetLeft; scrollLeft=slider.scrollLeft; });
-slider.addEventListener('mouseleave',()=>{isDown=false;});
-slider.addEventListener('mouseup',()=>{isDown=false;});
-slider.addEventListener('mousemove',e=>{if(!isDown) return; e.preventDefault(); const x=e.pageX-slider.offsetLeft; const walk=(x-startX)*2; slider.scrollLeft=scrollLeft-walk;});
 </script>
 
 <?php include 'includes/footer.php'; ?>
