@@ -59,7 +59,7 @@ if(isset($_POST['checkout'])){
     $stmt->execute();
 
     unset($_SESSION['cart']);
-    echo "<script>alert('Order Placed Successfully!'); window.location='product.php';</script>";
+    echo "<script>alert('Order Placed Successfully!'); window.location='products.php';</script>";
 }
 ?>
 
