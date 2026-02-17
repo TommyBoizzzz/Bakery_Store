@@ -9,13 +9,17 @@ if(empty($cart)){
     exit;
 }
 
-// Calculate total
+/* ===============================
+   CALCULATE TOTAL FROM CART
+=================================*/
 $total = 0;
 foreach($cart as $item){
     $total += $item['price'] * $item['qty'];
 }
 
-// Handle order submission
+/* ===============================
+   HANDLE ORDER SUBMIT
+=================================*/
 if(isset($_POST['place_order'])){
 
     $name = trim($_POST['name']);
@@ -23,11 +27,11 @@ if(isset($_POST['place_order'])){
     $payment_method = $_POST['payment_method'] ?? '';
     $location = $_POST['location'];
 
-    if(empty($payment_method)){
-        die("Payment method is required.");
+    if(empty($name) || empty($phone) || empty($payment_method) || empty($location)){
+        die("All fields are required.");
     }
 
-    // Insert order
+    /* INSERT ORDER */
     $stmt = $conn->prepare("
         INSERT INTO orders 
         (name, phone, payment_method, location, total, created_at, status) 
@@ -41,7 +45,7 @@ if(isset($_POST['place_order'])){
     $stmt->bind_param("ssssd", 
         $name,
         $phone,
-        $payment_method,   // ✅ FIXED
+        $payment_method,
         $location,
         $total
     );
@@ -52,11 +56,11 @@ if(isset($_POST['place_order'])){
 
     $order_id = $stmt->insert_id;
 
-    // Insert order items
+    /* INSERT ORDER ITEMS */
     $item_stmt = $conn->prepare("
         INSERT INTO order_items 
-        (order_id, product_id, price, qty) 
-        VALUES (?,?,?,?)
+        (order_id, product_id, product_name, price, qty, subtotal) 
+        VALUES (?,?,?,?,?,?)
     ");
 
     if(!$item_stmt){
@@ -66,14 +70,18 @@ if(isset($_POST['place_order'])){
     foreach($cart as $item){
 
         $product_id = $item['id'];
+        $product_name = $item['name'];
         $price = $item['price'];
         $qty = $item['qty'];
+        $subtotal = $price * $qty;
 
-        $item_stmt->bind_param("iidi", 
+        $item_stmt->bind_param("iisdid", 
             $order_id,
             $product_id,
+            $product_name,
             $price,
-            $qty
+            $qty,
+            $subtotal
         );
 
         if(!$item_stmt->execute()){
@@ -135,9 +143,8 @@ body{background:#f7efe5;}
 .btn-checkout:hover{opacity:0.8;}
 </style>
 
-<!-- Leaflet CSS -->
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <div class="cart-container">
@@ -188,7 +195,7 @@ body{background:#f7efe5;}
 </div>
 
 <script>
-// Leaflet Map (No Google API needed)
+// Leaflet Map
 let map = L.map('map').setView([11.5564, 104.9282], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

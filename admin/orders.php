@@ -2,10 +2,11 @@
 include "../config/db.php";
 include "Authencation/auth.php";
 
-/* UPDATE STATUS */
-if(isset($_GET['complete'])){
-    $id = intval($_GET['complete']);
-    mysqli_query($conn,"UPDATE orders SET status='Completed' WHERE id=$id");
+// ==================== UPDATE STATUS ====================
+if(isset($_POST['update_status'])){
+    $id = intval($_POST['order_id']);
+    $status = mysqli_real_escape_string($conn, $_POST['status']);
+    mysqli_query($conn, "UPDATE orders SET status='$status' WHERE id=$id");
     header("Location: ".$_SERVER['PHP_SELF']);
     exit();
 }
@@ -20,16 +21,17 @@ if(isset($_GET['complete'])){
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
-*{box-sizing:border-box;}
 
+*{box-sizing:border-box;}
 body{
     margin:0;
     font-family:'Poppins',sans-serif;
-    background:#f7efe5;
+    background:#f2f2f2;
 }
 
+/* Header */
 header{
-    background:linear-gradient(135deg,#4b2e2e,#c19a6b);
+    background: linear-gradient(135deg,#4b2e2e,#c19a6b);
     color:#fff;
     padding:20px 40px;
     font-size:24px;
@@ -38,6 +40,7 @@ header{
     align-items:center;
     gap:15px;
     border-bottom:4px solid #c19a6b;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .back-btn{
@@ -47,65 +50,121 @@ header{
     border-radius:8px;
     padding:8px 14px;
     cursor:pointer;
+    transition: 0.3s;
+}
+.back-btn:hover{
+    background:#3a1f1f;
 }
 
+/* Container */
 .container{
     max-width:1200px;
-    margin:20px auto;
+    margin:30px auto;
     padding:0 20px;
 }
 
-table{
+/* Table Scroll Wrapper */
+.table-scroll{
     width:100%;
-    border-collapse:collapse;
+    overflow-x:auto;
     background:#fff;
+    border-radius:12px;
+    padding:10px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* Custom horizontal scrollbar */
+.table-scroll::-webkit-scrollbar{
+    height:10px;
+}
+.table-scroll::-webkit-scrollbar-thumb{
+    background:#c19a6b;
+    border-radius:6px;
+}
+.table-scroll::-webkit-scrollbar-track{
+    background:#f0f0f0;
+}
+
+/* Table */
+.table-scroll table {
+    width: 100%;
+    min-width: 400px; /* minimum width for small screens */
+    border-collapse: collapse;
+    font-size: 14px;
 }
 
 th{
     background:#4b2e2e;
     color:#fff;
-    padding:14px;
+    padding:16px;
     border:1px solid #c19a6b;
+    text-align:center;
+    position: sticky;
+    top:0;
+    z-index:1;
 }
 
 td{
-    padding:12px;
+    padding:14px;
     border:1px solid #c19a6b;
     text-align:center;
 }
 
-.status-pending{
-    background:#ffc107;
-    color:#000;
-    padding:6px 12px;
-    border-radius:6px;
+/* Container for the row */
+.action-row {
+    display: flex;        /* make children align in a row */
+    align-items: center;  /* vertically center items */
+    gap: 10px;            /* space between dropdown and buttons */
 }
 
-.status-completed{
-    background:#28a745;
-    color:#fff;
-    padding:6px 12px;
-    border-radius:6px;
+/* Status Dropdown */
+.status-select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #c19a6b;
+    background: #fff;
+    color: #000;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+/* Buttons */
+.view-btn, .update-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
 .view-btn{
     background:#0095ff;
     color:#fff;
-    padding:6px 10px;
-    border-radius:6px;
-    text-decoration:none;
+}
+.view-btn:hover{
+    background:#007acc;
 }
 
-.complete-btn{
+.update-btn{
     background:#4b2e2e;
     color:#fff;
-    padding:6px 10px;
-    border-radius:6px;
-    text-decoration:none;
+}
+.update-btn:hover{
+    background:#3a1f1f;
 }
 
-.table-scroll{
-    overflow-x:auto;
+/* Responsive: small screens */
+@media(max-width:768px){
+    header{
+        flex-direction:column;
+        gap:10px;
+        font-size:20px;
+    }
+    .container{
+        padding:0 10px;
+    }
 }
 </style>
 </head>
@@ -118,19 +177,19 @@ ORDER MANAGEMENT
 </header>
 
 <div class="container">
-<div class="table-scroll">
-<table>
-<tr>
-<th>ID</th>
-<th>Name</th>
-<th>Phone</th>
-<th>Payment</th>
-<th>Location</th>
-<th>Total</th>
-<th>Date</th>
-<th>Status</th>
-<th>Action</th>
-</tr>
+    <div class="table-scroll">
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Payment</th>
+                <th>Location</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
 
 <?php
 $i=1;
@@ -139,30 +198,35 @@ while($row=mysqli_fetch_assoc($q)):
 ?>
 <tr>
 <td><?= $i++ ?></td>
-<td><?= $row['name'] ?></td>
-<td><?= $row['phone'] ?></td>
-<td><?= $row['payment_method'] ?></td>
-<td><?= $row['location'] ?></td>
-<td>$<?= $row['total'] ?></td>
+<td><?= htmlspecialchars($row['name']) ?></td>
+<td><?= htmlspecialchars($row['phone']) ?></td>
+<td><?= htmlspecialchars($row['payment_method']) ?></td>
+<td><?= htmlspecialchars($row['location']) ?></td>
+<td>$<?= number_format($row['total'],2) ?></td>
 <td><?= $row['created_at'] ?></td>
 <td>
-<?php if($row['status']=='Pending'): ?>
-<span class="status-pending">Pending</span>
-<?php else: ?>
-<span class="status-completed">Completed</span>
-<?php endif; ?>
+    <form method="post">
+        <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+        <div class="action-row">
+            <select name="status" class="status-select">
+                <option value="Pending" <?= $row['status']=='Pending' ? 'selected' : '' ?>>Pending</option>
+                <option value="Success" <?= $row['status']=='Success' ? 'selected' : '' ?>>Success</option>
+                <option value="Delivery" <?= $row['status']=='Delivery' ? 'selected' : '' ?>>Delivery</option>
+                <option value="Pick Up" <?= $row['status']=='Pick Up' ? 'selected' : '' ?>>Pick Up</option>
+                <option value="Cancel" <?= $row['status']=='Cancel' ? 'selected' : '' ?>>Cancel</option>
+            </select>
+            <button type="submit" name="update_status" class="update-btn">Update</button>
+        </div>
+    </form>
 </td>
-<td>
-<a class="view-btn" href="order_items.php?id=<?= $row['id'] ?>">View</a>
 
-<?php if($row['status']=='Pending'): ?>
-<a class="complete-btn" href="?complete=<?= $row['id'] ?>">Complete</a>
-<?php endif; ?>
+<td>
+    <a class="view-btn" href="order_items.php?id=<?= $row['id'] ?>">View</a>
 </td>
 </tr>
 <?php endwhile; ?>
-</table>
-</div>
+        </table>
+    </div>
 </div>
 
 </body>
