@@ -35,108 +35,172 @@ if(isset($_POST['search'])){
 ?>
 
 <style>
-body {
-    background: #f7efe5;
-    font-family: 'Poppins', sans-serif;
-}
+    body {
+        background: #f7efe5;
+        font-family: 'Poppins', sans-serif;
+    }
 
-.track-wrapper {
-    max-width: 900px;
-    margin: 70px auto;
-    background: white;
-    padding: 40px;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
+    .track-wrapper {
+        max-width: 900px;
+        margin: 70px auto;
+        background: white;
+        padding: 40px;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    }
 
-.track-wrapper h2 {
-    text-align: center;
-    margin-bottom: 25px;
-    color: #4b2e2e;
-}
+    .track-wrapper h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        color: #4b2e2e;
+    }
 
-.search-area {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 30px;
-}
+    .search-area {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
 
-.search-area input {
-    padding: 12px;
-    width: 300px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    font-size: 14px;
-}
+    .search-area input {
+        padding: 12px;
+        width: 300px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
 
-.search-area button {
-    padding: 12px 25px;
-    background: #4b2e2e;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-}
+    .search-area button {
+        padding: 12px 25px;
+        background: #4b2e2e;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+    }
 
-.search-area button:hover {
-    opacity: 0.85;
-}
+    .search-area button:hover {
+        opacity: 0.85;
+    }
 
-.booking-card {
-    background: #fdf8f4;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    border-left: 6px solid #4b2e2e;
-}
+    .booking-card {
+        background: #fdf8f4;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        border-left: 6px solid #4b2e2e;
+    }
 
-.booking-card h4 {
-    margin: 0 0 10px 0;
-    display: flex;
-    justify-content: space-between;
-    cursor: pointer;
-}
+    .booking-card h4 {
+        margin: 0 0 10px 0;
+        display: flex;
+        justify-content: space-between;
+        cursor: pointer;
+    }
 
-.booking-card p {
-    margin: 4px 0;
-}
+    .booking-card p {
+        margin: 4px 0;
+    }
 
-.status {
-    font-weight: bold;
-}
+    .status {
+        font-weight: bold;
+    }
 
-.no-result {
-    text-align: center;
-    color: red;
-    margin-top: 20px;
-}
+    .no-result {
+        text-align: center;
+        color: red;
+        margin-top: 20px;
+    }
 
-/* Order items */
-.order-items {
-    display: none;
-    margin-top: 10px;
-    border-top: 1px solid #ccc;
-    padding-top: 10px;
-}
+    /* Order items */
+    .order-items {
+        display: none;
+        margin-top: 10px;
+        border-top: 1px solid #ccc;
+        padding-top: 10px;
+    }
 
-.order-items table {
-    width: 100%;
-    border-collapse: collapse;
-}
+    .order-items table {
+        width: 100%;
+        border-collapse: collapse;
+    }
 
-.order-items th, .order-items td {
-    text-align: left;
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-}
+    .order-items th, .order-items td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
 
-.toggle-btn {
-    font-size: 14px;
-    color: #4b2e2e;
-    font-weight: 500;
-}
+    .toggle-btn {
+        font-size: 14px;
+        color: #4b2e2e;
+        font-weight: 500;
+    }
+
+    /* Base styles remain the same */
+
+    /* Responsive for small screens (like 430px width) */
+    @media screen and (max-width: 450px) {
+        .track-wrapper {
+            padding: 20px;
+            margin: 20px 10px;
+        }
+
+        .search-area {
+            flex-direction: column;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .search-area input {
+            width: 100%;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .search-area button {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .booking-card {
+            padding: 15px;
+            border-left-width: 4px;
+        }
+
+        .booking-card h4 {
+            font-size: 16px;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .booking-card p {
+            font-size: 14px;
+        }
+
+        .order-items table, 
+        .order-items th, 
+        .order-items td {
+            font-size: 12px;
+        }
+
+        .order-items table {
+            display: block;
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .order-items th, .order-items td {
+            white-space: nowrap;
+        }
+
+        .toggle-btn {
+            font-size: 13px;
+        }
+    }
+
 </style>
 
 <div class="track-wrapper">

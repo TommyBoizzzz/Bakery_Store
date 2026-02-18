@@ -1,0 +1,109 @@
+<?php
+include 'config/db.php';
+
+// Get order ID
+$order_id = intval($_GET['id']);
+$order = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM orders WHERE id=$order_id"));
+if(!$order){
+    die("Order not found!");
+}
+
+// Get order items
+$items = mysqli_query($conn, "SELECT * FROM order_items WHERE order_id=$order_id");
+
+// Telegram link for owner
+$ownerTelegram = "https://t.me/DavinRamsay"; // change to your Telegram username
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Order Details - #<?= $order_id ?></title>
+<style>
+body{font-family:Poppins,sans-serif;background:#f7efe5;padding:20px;margin:0;}
+.container{max-width:800px;margin:auto;background:white;padding:20px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.1);}
+h2,h3{color:#4b2e2e;text-align:center;margin:5px 0;}
+table{width:100%;border-collapse:collapse;margin-top:20px;}
+th,td{padding:12px;border:1px solid #c19a6b;text-align:center;}
+th{background:#4b2e2e;color:white;}
+.total{font-weight:bold;}
+.btn-telegram{display:inline-block;margin-top:20px;padding:12px 25px;background:#0088cc;color:white;border-radius:12px;text-decoration:none;text-align:center;font-weight:600;}
+.btn-telegram:hover{opacity:0.85;}
+.back-btn{display:inline-block;margin-top:10px;padding:8px 16px;background:#4b2e2e;color:white;border-radius:8px;text-decoration:none;}
+
+/* ===== Responsive for screens <= 430px ===== */
+@media screen and (max-width:430px){
+    table, thead, tbody, th, td, tr {
+        display:block;
+        width:100%;
+    }
+    thead tr {display:none;} /* hide table headers */
+    tr {margin-bottom:15px; border:1px solid #c19a6b; border-radius:12px; padding:10px;}
+    td{
+        text-align:right;
+        padding-left:50%;
+        position:relative;
+        border:none;
+        border-bottom:1px solid #c19a6b;
+    }
+    td::before{
+        content: attr(data-label);
+        position:absolute;
+        left:10px;
+        width:45%;
+        padding-left:10px;
+        font-weight:bold;
+        text-align:left;
+    }
+    td:last-child{border-bottom:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎉 Order Placed Successfully!</h2>
+    <h3>Order ID: #<?= $order['id'] ?></h3>
+
+    <p><strong>Name:</strong> <?= htmlspecialchars($order['name']) ?></p>
+    <p><strong>Phone:</strong> <?= htmlspecialchars($order['phone']) ?></p>
+    <p><strong>Payment:</strong> <?= htmlspecialchars($order['payment_method']) ?></p>
+    <p><strong>Location:</strong> <?= htmlspecialchars($order['location']) ?></p>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Product</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php 
+        $total = 0;
+        while($row = mysqli_fetch_assoc($items)):
+            $subtotal = $row['price'] * $row['qty'];
+            $total += $subtotal;
+        ?>
+        <tr>
+            <td data-label="Product"><?= htmlspecialchars($row['product_name']) ?></td>
+            <td data-label="Price">$<?= number_format($row['price'],2) ?></td>
+            <td data-label="Qty"><?= $row['qty'] ?></td>
+            <td data-label="Subtotal">$<?= number_format($subtotal,2) ?></td>
+        </tr>
+        <?php endwhile; ?>
+        <tr>
+            <td colspan="3" class="total">Total</td>
+            <td class="total">$<?= number_format($total,2) ?></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <a href="<?= $ownerTelegram ?>" class="btn-telegram" target="_blank">💬 Chat with Owner</a>
+    <br>
+    <a href="products.php" class="back-btn">← Back to Products</a>
+</div>
+
+</body>
+</html>

@@ -27,7 +27,7 @@ if(isset($_POST['add_to_cart'])){
             ];
         }
     }
-    header("Location: cart.php"); // Redirect back to cart
+    header("Location: cart.php");
     exit;
 }
 
@@ -50,7 +50,6 @@ if(isset($_POST['checkout'])){
     exit;
 }
 
-
 // Calculate total
 $cart = $_SESSION['cart'] ?? [];
 $total = 0;
@@ -60,7 +59,7 @@ include 'includes/header.php';
 ?>
 
 <style>
-body{background:#f7efe5;}
+body{background:#f7efe5;font-family:'Poppins',sans-serif;}
 .cart-container{max-width:1100px;margin:50px auto;padding:0 15px;}
 .cart-container h2{text-align:center;margin-bottom:25px;}
 .cart-table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;}
@@ -75,6 +74,18 @@ body{background:#f7efe5;}
 .btn-checkout:hover,.remove-btn:hover{opacity:0.8;}
 .update-btn{background:#8b5e3c;border:none;padding:8px 20px;border-radius:20px;color:white;cursor:pointer;}
 .update-btn:hover{opacity:0.8;}
+
+/* ===== Responsive for 430px screens ===== */
+@media screen and (max-width: 450px){
+    .cart-container{padding:0 10px;margin:20px auto;}
+    .cart-table{display:block;overflow-x:auto;font-size:12px;}
+    .cart-table th,.cart-table td{padding:8px;white-space:nowrap;}
+    .cart-img{width:70px;height:50px;}
+    .qty-input{width:50px;padding:4px;font-size:12px;}
+    .cart-footer{flex-direction:column;align-items:flex-start;gap:10px;}
+    .total{font-size:18px;}
+    .btn-checkout{width:100%;padding:12px;text-align:center;font-size:14px;}
+}
 </style>
 
 <div class="cart-container">
@@ -101,7 +112,7 @@ body{background:#f7efe5;}
         ?>
         <tr>
             <td><img src="assets/images/<?php echo $item['image']; ?>" class="cart-img"></td>
-            <td><?php echo $item['name']; ?></td>
+            <td><?php echo htmlspecialchars($item['name']); ?></td>
             <td><?php echo number_format($item['price'],2); ?></td>
             <td><input type="number" name="qty[<?php echo $id; ?>]" class="qty-input" value="<?php echo $item['qty']; ?>" min="1"></td>
             <td class="subtotal"><?php echo number_format($subtotal,2); ?></td>
@@ -115,7 +126,6 @@ body{background:#f7efe5;}
     <div class="total" id="cart-total">
         Total: $<?php echo number_format($total,2); ?>
     </div>
-
     <button type="submit" name="checkout" class="btn-checkout">
         Checkout
     </button>

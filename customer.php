@@ -109,7 +109,8 @@ if(isset($_POST['place_order'])){
     // CLEAR CART
     unset($_SESSION['cart']);
 
-    echo "<script>alert('Order placed successfully!'); window.location='products.php';</script>";
+    // REDIRECT TO RECIPE PAGE
+    header("Location: recipe.php?id=".$order_id);
     exit;
 }
 
@@ -117,32 +118,38 @@ include 'includes/header.php';
 ?>
 
 <style>
-body{background:#f7efe5;font-family:'Poppins',sans-serif;}
+body{
+    background:#f7efe5;
+    font-family:'Poppins',sans-serif;
+}
 .cart-container{
     max-width:700px;
-    margin:50px auto;
+    margin:30px auto;
     padding:20px;
     background:white;
     border-radius:12px;
     box-shadow:0 0 15px rgba(0,0,0,0.1);
 }
 .cart-container h2{
-    margin-bottom:25px;
+    margin-bottom:20px;
     text-align:center;
     color:#4b2e2e;
+    font-size:22px;
 }
 .form-group{margin-bottom:15px;}
 .form-group label{
     display:block;
     margin-bottom:6px;
     font-weight:bold;
+    font-size:14px;
 }
 .form-group input, 
 .form-group select{
     width:100%;
-    padding:8px;
+    padding:10px;
     border-radius:6px;
     border:1px solid #ccc;
+    font-size:14px;
 }
 #map{
     height:300px;
@@ -162,6 +169,16 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
     font-weight:600;
 }
 .btn-checkout:hover{opacity:0.85;}
+
+/* ===== Responsive for 430px screens ===== */
+@media screen and (max-width: 450px){
+    .cart-container{padding:15px;margin:15px;}
+    .cart-container h2{font-size:20px;}
+    .form-group label{font-size:13px;}
+    .form-group input,.form-group select{padding:8px;font-size:13px;}
+    #map{height:250px;}
+    .btn-checkout{font-size:15px;padding:10px;}
+}
 </style>
 
 <!-- Leaflet Map -->
@@ -191,18 +208,24 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
         </select>
     </div>
 
-<div class="form-group">
-    <label>Location</label>
-    <input type="text" 
-           id="location" 
-           name="location" 
-           placeholder="Your current location will be detected" 
-           required readonly>
-    <div id="map"></div>
+    <div class="form-group">
+        <label>Location</label>
+        <input type="text" 
+               id="location" 
+               name="location" 
+               placeholder="Your current location will be detected" 
+               required readonly>
+        <div id="map"></div>
+    </div>
+
+    <button type="submit" name="place_order" class="btn-checkout">
+        Place Order
+    </button>
+</form>
 </div>
 
 <script>
-// Initialize map with default center
+// Initialize map
 let map = L.map('map').setView([11.5564, 104.9282], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -211,19 +234,15 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let marker, circle;
 
-// Try to get user location
+// Get user location
 if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(function(position){
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        // Update input
         document.getElementById('location').value = lat.toFixed(6) + "," + lng.toFixed(6);
-
-        // Set map view
         map.setView([lat, lng], 16);
 
-        // Add marker and circle
         marker = L.marker([lat, lng]).addTo(map);
         circle = L.circle([lat, lng], {
             color: 'red',

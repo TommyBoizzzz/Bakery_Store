@@ -44,7 +44,7 @@ header{
     background: linear-gradient(135deg,#4b2e2e,#c19a6b);
     color:#fff;
     padding:20px 40px;
-    font-size:24px;
+    font-size:20px;
     font-weight:600;
     display:flex;
     align-items:center;
@@ -191,15 +191,53 @@ td{
     background:#3a1f1f;
 }
 
-/* Responsive: small screens */
-@media(max-width:768px){
-    header{
-        flex-direction:column;
-        gap:10px;
-        font-size:20px;
+@media(max-width:430px){
+    .table-scroll table,
+    .table-scroll thead,
+    .table-scroll tbody,
+    .table-scroll th,
+    .table-scroll td,
+    .table-scroll tr{
+        display:block;
     }
-    .container{
-        padding:0 10px;
+
+    thead tr{
+        display:none; /* hide table header */   
+    }
+
+    td{
+        text-align:left;
+        border:none;
+        border-bottom:1px solid #c19a6b;
+        padding:10px;
+        position: relative;
+        padding-left:50%;
+        margin-bottom:15px;
+    }
+
+    td::before{
+        position:absolute;
+        left:10px;
+        width:45%;
+        white-space:nowrap;
+        font-weight:bold;
+        color:#4b2e2e;
+    }
+
+    td:nth-of-type(1)::before{content:"ID";}
+    td:nth-of-type(2)::before{content:"Name";}
+    td:nth-of-type(3)::before{content:"Phone";}
+    td:nth-of-type(4)::before{content:"Payment";}
+    td:nth-of-type(5)::before{content:"Location";}
+    td:nth-of-type(6)::before{content:"Total";}
+    td:nth-of-type(7)::before{content:"Date";}
+    td:nth-of-type(8)::before{content:"Status";}
+    td:nth-of-type(9)::before{content:"Action";}
+
+    .action-row{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:6px;
     }
 }
 </style>
