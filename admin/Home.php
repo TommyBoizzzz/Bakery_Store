@@ -6,6 +6,7 @@ include 'Authencation/auth.php';
 <head>
 <meta charset="UTF-8">
 <title>BaBBoB Bakery ADMIN</title>
+<link rel="icon" type="image/png" href="/assets/images_app/Link.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
@@ -157,17 +158,17 @@ html, body {
         <div class="card">
             <h3>💾 Poster</h3>
             <p>Manage Poster Sliders</p>
-            <a href="Poster.php">Manage</a>
+            <a href="poster.php">Manage</a>
         </div>
         <div class="card">
             <h3>🍞 Category</h3>
             <p>Manage Bakery Categories</p>
-            <a href="Category.php">Manage</a>
+            <a href="category.php">Manage</a>
         </div>
         <div class="card">
             <h3>🎂 Products</h3>
             <p>Manage Bakery Products</p>
-            <a href="Product.php">Manage</a>
+            <a href="product.php">Manage</a>
         </div>
         <div class="card">
             <h3>🛒 Orders</h3>
