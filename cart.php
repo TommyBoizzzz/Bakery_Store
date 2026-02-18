@@ -39,14 +39,17 @@ if(isset($_GET['remove'])){
     exit;
 }
 
-// Update quantities
-if(isset($_POST['update_cart'])){
-    foreach($_POST['qty'] as $id=>$qty){
-        $_SESSION['cart'][$id]['qty'] = max(1,intval($qty));
+// Checkout (update qty + go to customer page)
+if(isset($_POST['checkout'])){
+    if(isset($_POST['qty'])){
+        foreach($_POST['qty'] as $id=>$qty){
+            $_SESSION['cart'][$id]['qty'] = max(1,intval($qty));
+        }
     }
-    header("Location: cart.php");
+    header("Location: customer.php");
     exit;
 }
+
 
 // Calculate total
 $cart = $_SESSION['cart'] ?? [];
@@ -109,12 +112,15 @@ body{background:#f7efe5;}
 </table>
 
 <div class="cart-footer">
-    <div class="total" id="cart-total">Total: $<?php echo number_format($total,2); ?></div>
-    <div>
-        <button type="submit" name="update_cart" class="update-btn">Update Cart</button>
-        <a href="customer.php" class="btn-checkout">Checkout</a>
+    <div class="total" id="cart-total">
+        Total: $<?php echo number_format($total,2); ?>
     </div>
+
+    <button type="submit" name="checkout" class="btn-checkout">
+        Checkout
+    </button>
 </div>
+
 </form>
 <?php endif; ?>
 </div>
