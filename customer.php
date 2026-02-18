@@ -2,24 +2,53 @@
 session_start();
 include 'config/db.php';
 
+// ==================== CART CHECK ====================
 $cart = $_SESSION['cart'] ?? [];
-
 if(empty($cart)){
     echo "<script>alert('Your cart is empty!'); window.location='products.php';</script>";
     exit;
 }
 
-/* ===============================
-   CALCULATE TOTAL FROM CART
-=================================*/
+// ==================== CALCULATE TOTAL ====================
 $total = 0;
 foreach($cart as $item){
     $total += $item['price'] * $item['qty'];
 }
 
-/* ===============================
-   HANDLE ORDER SUBMIT
-=================================*/
+// ==================== TELEGRAM FUNCTION ====================
+$botToken = "8536317909:AAEMKbGDVib9yQYIEDOFuMdHU0YVpWqD1UE"; // bot token
+$groupID  = -1003709157668; // supergroup ID
+$topicID  = 2;               // MY ORDER topic ID
+
+function sendTelegramMessage($message){
+    global $botToken, $groupID, $topicID;
+
+    $url = "https://api.telegram.org/bot".$botToken."/sendMessage";
+
+    $data = [
+        'chat_id' => $groupID,
+        'message_thread_id' => $topicID,
+        'text' => $message,
+        'parse_mode' => 'HTML'
+    ];
+
+    $options = [
+        'http' => [
+            'method'  => 'POST',
+            'header'  => "Content-Type: application/x-www-form-urlencoded\r\n",
+            'content' => http_build_query($data),
+            'ignore_errors' => true
+        ]
+    ];
+
+    $context = stream_context_create($options);
+    $result = file_get_contents($url, false, $context);
+    if(!$result){
+        die("Telegram message failed! Check bot token, group ID, and bot permissions.");
+    }
+}
+
+// ==================== PLACE ORDER ====================
 if(isset($_POST['place_order'])){
 
     $name = trim($_POST['name']);
@@ -31,64 +60,53 @@ if(isset($_POST['place_order'])){
         die("All fields are required.");
     }
 
-    /* INSERT ORDER */
+    // INSERT ORDER
     $stmt = $conn->prepare("
         INSERT INTO orders 
         (name, phone, payment_method, location, total, created_at, status) 
         VALUES (?,?,?,?,?,NOW(),'Pending')
     ");
+    if(!$stmt) die("Prepare failed: ".$conn->error);
 
-    if(!$stmt){
-        die("Prepare failed: ".$conn->error);
-    }
-
-    $stmt->bind_param("ssssd", 
-        $name,
-        $phone,
-        $payment_method,
-        $location,
-        $total
-    );
-
-    if(!$stmt->execute()){
-        die("Execute failed: ".$stmt->error);
-    }
+    $stmt->bind_param("ssssd", $name, $phone, $payment_method, $location, $total);
+    if(!$stmt->execute()) die("Execute failed: ".$stmt->error);
 
     $order_id = $stmt->insert_id;
 
-    /* INSERT ORDER ITEMS */
+    // INSERT ORDER ITEMS
     $item_stmt = $conn->prepare("
         INSERT INTO order_items 
         (order_id, product_id, product_name, price, qty, subtotal) 
         VALUES (?,?,?,?,?,?)
     ");
-
-    if(!$item_stmt){
-        die("Prepare failed for items: ".$conn->error);
-    }
+    if(!$item_stmt) die("Prepare failed for items: ".$conn->error);
 
     foreach($cart as $item){
-
         $product_id = $item['id'];
         $product_name = $item['name'];
         $price = $item['price'];
         $qty = $item['qty'];
         $subtotal = $price * $qty;
 
-        $item_stmt->bind_param("iisdid", 
-            $order_id,
-            $product_id,
-            $product_name,
-            $price,
-            $qty,
-            $subtotal
-        );
-
-        if(!$item_stmt->execute()){
-            die("Execute failed for items: ".$item_stmt->error);
-        }
+        $item_stmt->bind_param("iisdid", $order_id, $product_id, $product_name, $price, $qty, $subtotal);
+        if(!$item_stmt->execute()) die("Execute failed for items: ".$item_stmt->error);
     }
 
+    // SEND TELEGRAM NOTIFICATION
+    $map_link = "https://www.google.com/maps/search/?api=1&query=" . $location;
+
+    $message  = "🍰 <b>New Order - BaBBoB Bakery</b>\n\n";
+    $message .= "🆔 Order ID: #".$order_id."\n";
+    $message .= "👤 Name: ".$name."\n";
+    $message .= "📞 Phone: ".$phone."\n";
+    $message .= "💳 Payment: ".$payment_method."\n";
+    $message .= "📍 Location: <a href='".$map_link."'>View Map</a>\n";
+    $message .= "💰 Total: $".number_format($total,2)."\n";
+    $message .= "📦 Status: Pending";
+
+    sendTelegramMessage($message);
+
+    // CLEAR CART
     unset($_SESSION['cart']);
 
     echo "<script>alert('Order placed successfully!'); window.location='products.php';</script>";
@@ -99,7 +117,7 @@ include 'includes/header.php';
 ?>
 
 <style>
-body{background:#f7efe5;}
+body{background:#f7efe5;font-family:'Poppins',sans-serif;}
 .cart-container{
     max-width:700px;
     margin:50px auto;
@@ -111,6 +129,7 @@ body{background:#f7efe5;}
 .cart-container h2{
     margin-bottom:25px;
     text-align:center;
+    color:#4b2e2e;
 }
 .form-group{margin-bottom:15px;}
 .form-group label{
@@ -134,16 +153,18 @@ body{background:#f7efe5;}
 .btn-checkout{
     background:#4b2e2e;
     border:none;
-    padding:10px 25px;
+    padding:12px 25px;
     border-radius:20px;
     color:white;
     cursor:pointer;
     width:100%;
+    font-size:16px;
+    font-weight:600;
 }
-.btn-checkout:hover{opacity:0.8;}
+.btn-checkout:hover{opacity:0.85;}
 </style>
 
-<!-- Leaflet -->
+<!-- Leaflet Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -151,7 +172,6 @@ body{background:#f7efe5;}
 <h2>Customer Information</h2>
 
 <form method="POST">
-
     <div class="form-group">
         <label>Name</label>
         <input type="text" name="name" required>
@@ -179,7 +199,6 @@ body{background:#f7efe5;}
                name="location" 
                placeholder="Click on the map to select your location" 
                required readonly>
-
         <div id="map"></div>
     </div>
 
@@ -190,7 +209,6 @@ body{background:#f7efe5;}
     <button type="submit" name="place_order" class="btn-checkout">
         Place Order
     </button>
-
 </form>
 </div>
 
@@ -203,18 +221,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let marker;
-
 map.on('click', function(e){
-
-    if(marker){
-        map.removeLayer(marker);
-    }
-
+    if(marker) map.removeLayer(marker);
     marker = L.marker(e.latlng).addTo(map);
-
     document.getElementById('location').value =
-        e.latlng.lat.toFixed(6) + "," +
-        e.latlng.lng.toFixed(6);
+        e.latlng.lat.toFixed(6) + "," + e.latlng.lng.toFixed(6);
 });
 </script>
 

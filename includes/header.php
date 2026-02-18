@@ -145,8 +145,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
        View Cart
     </a>
 
-    <a href="profile.php" 
-       class="nav-link <?php if($current_page=='profile.php') echo 'active'; ?>">
-       Profile
+    <a href="booking.php" 
+       class="nav-link <?php if($current_page=='booking.php') echo 'active'; ?>">
+       My Booking
     </a>
 </nav>
