@@ -186,47 +186,58 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
         <label>Payment Method</label>
         <select name="payment_method" required>
             <option value="">-- Select Payment --</option>
-            <option value="Cash">Cash</option>
-            <option value="Bank Transfer">Bank Transfer</option>
-            <option value="Mobile Payment">Mobile Payment</option>
+            <option value="Cash">CASH</option>
+            <option value="Bank Transfer" disabled>BANK</option>
         </select>
     </div>
 
-    <div class="form-group">
-        <label>Location</label>
-        <input type="text" 
-               id="location" 
-               name="location" 
-               placeholder="Click on the map to select your location" 
-               required readonly>
-        <div id="map"></div>
-    </div>
-
-    <div class="form-group">
-        <strong>Total: $<?php echo number_format($total,2); ?></strong>
-    </div>
-
-    <button type="submit" name="place_order" class="btn-checkout">
-        Place Order
-    </button>
-</form>
+<div class="form-group">
+    <label>Location</label>
+    <input type="text" 
+           id="location" 
+           name="location" 
+           placeholder="Your current location will be detected" 
+           required readonly>
+    <div id="map"></div>
 </div>
 
 <script>
-// Leaflet Map
+// Initialize map with default center
 let map = L.map('map').setView([11.5564, 104.9282], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap'
 }).addTo(map);
 
-let marker;
-map.on('click', function(e){
-    if(marker) map.removeLayer(marker);
-    marker = L.marker(e.latlng).addTo(map);
-    document.getElementById('location').value =
-        e.latlng.lat.toFixed(6) + "," + e.latlng.lng.toFixed(6);
-});
+let marker, circle;
+
+// Try to get user location
+if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(position){
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+
+        // Update input
+        document.getElementById('location').value = lat.toFixed(6) + "," + lng.toFixed(6);
+
+        // Set map view
+        map.setView([lat, lng], 16);
+
+        // Add marker and circle
+        marker = L.marker([lat, lng]).addTo(map);
+        circle = L.circle([lat, lng], {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.3,
+            radius: 50
+        }).addTo(map);
+
+    }, function(error){
+        alert("Unable to retrieve your location. Please allow location access.");
+    });
+} else {
+    alert("Geolocation is not supported by your browser.");
+}
 </script>
 
 <?php include 'includes/footer.php'; ?>

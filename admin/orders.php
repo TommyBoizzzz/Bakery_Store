@@ -10,6 +10,16 @@ if(isset($_POST['update_status'])){
     header("Location: ".$_SERVER['PHP_SELF']);
     exit();
 }
+
+// ==================== FILTER STATUS ====================
+$status_filter = '';
+$current_status = isset($_GET['status']) ? $_GET['status'] : 'All';
+if($current_status != 'All'){
+    $status_safe = mysqli_real_escape_string($conn, $current_status);
+    $status_filter = "WHERE status='$status_safe'";
+}
+
+$q = mysqli_query($conn,"SELECT * FROM orders $status_filter ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -63,6 +73,32 @@ header{
     padding:0 20px;
 }
 
+/* Status Tabs */
+.status-tabs{
+    margin-bottom: 15px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.status-tabs .tab{
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: #fff;
+    color: #4b2e2e;
+    text-decoration: none;
+    border:1px solid #c19a6b;
+    font-weight:500;
+    transition:0.3s;
+}
+.status-tabs .tab:hover{
+    background:#c19a6b;
+    color:#fff;
+}
+.status-tabs .tab.active{
+    background:#4b2e2e;
+    color:#fff;
+}
+
 /* Table Scroll Wrapper */
 .table-scroll{
     width:100%;
@@ -88,7 +124,7 @@ header{
 /* Table */
 .table-scroll table {
     width: 100%;
-    min-width: 400px; /* minimum width for small screens */
+    min-width: 600px; /* minimum width for small screens */
     border-collapse: collapse;
     font-size: 14px;
 }
@@ -177,6 +213,19 @@ ORDER MANAGEMENT
 </header>
 
 <div class="container">
+
+    <!-- Status Tabs -->
+    <div class="status-tabs">
+        <?php
+        $statuses = ['All','Pending','Success','Delivery','Pick Up','Cancel'];
+        foreach($statuses as $status_tab):
+            $active = ($status_tab == $current_status) ? 'active' : '';
+        ?>
+            <a href="?status=<?= urlencode($status_tab) ?>" class="tab <?= $active ?>"><?= $status_tab ?></a>
+        <?php endforeach; ?>
+    </div>
+
+    <!-- Table -->
     <div class="table-scroll">
         <table>
             <tr>
@@ -191,40 +240,36 @@ ORDER MANAGEMENT
                 <th>Action</th>
             </tr>
 
-<?php
-$i=1;
-$q = mysqli_query($conn,"SELECT * FROM orders ORDER BY id DESC");
-while($row=mysqli_fetch_assoc($q)):
-?>
-<tr>
-<td><?= $i++ ?></td>
-<td><?= htmlspecialchars($row['name']) ?></td>
-<td><?= htmlspecialchars($row['phone']) ?></td>
-<td><?= htmlspecialchars($row['payment_method']) ?></td>
-<td><?= htmlspecialchars($row['location']) ?></td>
-<td>$<?= number_format($row['total'],2) ?></td>
-<td><?= $row['created_at'] ?></td>
-<td>
-    <form method="post">
-        <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
-        <div class="action-row">
-            <select name="status" class="status-select">
-                <option value="Pending" <?= $row['status']=='Pending' ? 'selected' : '' ?>>Pending</option>
-                <option value="Success" <?= $row['status']=='Success' ? 'selected' : '' ?>>Success</option>
-                <option value="Delivery" <?= $row['status']=='Delivery' ? 'selected' : '' ?>>Delivery</option>
-                <option value="Pick Up" <?= $row['status']=='Pick Up' ? 'selected' : '' ?>>Pick Up</option>
-                <option value="Cancel" <?= $row['status']=='Cancel' ? 'selected' : '' ?>>Cancel</option>
-            </select>
-            <button type="submit" name="update_status" class="update-btn">Update</button>
-        </div>
-    </form>
-</td>
+        <?php while($row=mysqli_fetch_assoc($q)): ?>
+        <tr>
+            <td><?= $row['id'] ?></td>
+            <td><?= htmlspecialchars($row['name']) ?></td>
+            <td><?= htmlspecialchars($row['phone']) ?></td>
+            <td><?= htmlspecialchars($row['payment_method']) ?></td>
+            <td><?= htmlspecialchars($row['location']) ?></td>
+            <td>$<?= number_format($row['total'],2) ?></td>
+            <td><?= $row['created_at'] ?></td>
+            <td>
+                <form method="post">
+                    <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+                    <div class="action-row">
+                        <select name="status" class="status-select">
+                            <option value="Pending" <?= $row['status']=='Pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="Success" <?= $row['status']=='Success' ? 'selected' : '' ?>>Success</option>
+                            <option value="Delivery" <?= $row['status']=='Delivery' ? 'selected' : '' ?>>Delivery</option>
+                            <option value="Pick Up" <?= $row['status']=='Pick Up' ? 'selected' : '' ?>>Pick Up</option>
+                            <option value="Cancel" <?= $row['status']=='Cancel' ? 'selected' : '' ?>>Cancel</option>
+                        </select>
+                        <button type="submit" name="update_status" class="update-btn">Update</button>
+                    </div>
+                </form>
+            </td>
 
-<td>
-    <a class="view-btn" href="order_items.php?id=<?= $row['id'] ?>">View</a>
-</td>
-</tr>
-<?php endwhile; ?>
+            <td>
+                <a class="view-btn" href="order_items.php?id=<?= $row['id'] ?>">View</a>
+            </td>
+        </tr>
+        <?php endwhile; ?>
         </table>
     </div>
 </div>
