@@ -12,7 +12,7 @@ if(!$order){
 $items = mysqli_query($conn, "SELECT * FROM order_items WHERE order_id=$order_id");
 
 // Telegram link for owner
-$ownerTelegram = "https://t.me/DavinRamsay"; // change to your Telegram username
+$ownerTelegram = "https://t.me/"; 
 ?>
 
 <!DOCTYPE html>
