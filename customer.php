@@ -16,9 +16,9 @@ foreach($cart as $item){
 }
 
 // ==================== TELEGRAM FUNCTION ====================
-$botToken = "8536317909:AAEMKbGDVib9yQYIEDOFuMdHU0YVpWqD1UE"; // bot token
-$groupID  = -1003709157668; // supergroup ID
-$topicID  = 2;               // MY ORDER topic ID
+$botToken = "6547207545:AAGXrorwSAM-A7khdiVCfv11OpoW6RezSs4";
+$groupID  = -1003558482464;
+$topicID  = 2;
 
 function sendTelegramMessage($message){
     global $botToken, $groupID, $topicID;
@@ -44,7 +44,7 @@ function sendTelegramMessage($message){
     $context = stream_context_create($options);
     $result = file_get_contents($url, false, $context);
     if(!$result){
-        die("Telegram message failed! Check bot token, group ID, and bot permissions.");
+        die("Telegram message failed!");
     }
 }
 
@@ -52,12 +52,16 @@ function sendTelegramMessage($message){
 if(isset($_POST['place_order'])){
 
     $name = trim($_POST['name']);
+    if(empty($name)){
+        $name = "Guest";
+    }
+
     $phone = trim($_POST['phone']);
     $payment_method = $_POST['payment_method'] ?? '';
     $location = $_POST['location'];
 
-    if(empty($name) || empty($phone) || empty($payment_method) || empty($location)){
-        die("All fields are required.");
+    if(empty($phone) || empty($payment_method) || empty($location)){
+        die("Phone, payment and location are required.");
     }
 
     // INSERT ORDER
@@ -106,10 +110,7 @@ if(isset($_POST['place_order'])){
 
     sendTelegramMessage($message);
 
-    // CLEAR CART
     unset($_SESSION['cart']);
-
-    // REDIRECT TO RECIPE PAGE
     header("Location: recipe.php?id=".$order_id);
     exit;
 }
@@ -134,14 +135,12 @@ body{
     margin-bottom:20px;
     text-align:center;
     color:#4b2e2e;
-    font-size:22px;
 }
 .form-group{margin-bottom:15px;}
 .form-group label{
     display:block;
     margin-bottom:6px;
     font-weight:bold;
-    font-size:14px;
 }
 .form-group input, 
 .form-group select{
@@ -149,7 +148,6 @@ body{
     padding:10px;
     border-radius:6px;
     border:1px solid #ccc;
-    font-size:14px;
 }
 #map{
     height:300px;
@@ -167,21 +165,11 @@ body{
     width:100%;
     font-size:16px;
     font-weight:600;
+    margin-top:10px;
 }
 .btn-checkout:hover{opacity:0.85;}
-
-/* ===== Responsive for 430px screens ===== */
-@media screen and (max-width: 450px){
-    .cart-container{padding:15px;margin:15px;}
-    .cart-container h2{font-size:20px;}
-    .form-group label{font-size:13px;}
-    .form-group input,.form-group select{padding:8px;font-size:13px;}
-    #map{height:250px;}
-    .btn-checkout{font-size:15px;padding:10px;}
-}
 </style>
 
-<!-- Leaflet Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
@@ -189,9 +177,14 @@ body{
 <h2>Customer Information</h2>
 
 <form method="POST">
+
     <div class="form-group">
         <label>Name</label>
-        <input type="text" name="name" required>
+        <input type="text" 
+               name="name" 
+               id="nameInput"
+               value="Guest"
+               onclick="clearGuest()">
     </div>
 
     <div class="form-group">
@@ -213,19 +206,22 @@ body{
         <input type="text" 
                id="location" 
                name="location" 
-               placeholder="Your current location will be detected" 
                required readonly>
         <div id="map"></div>
     </div>
 
+    <button type="button" onclick="refreshMap()" class="btn-checkout">
+        Refresh Map
+    </button>
+
     <button type="submit" name="place_order" class="btn-checkout">
         Place Order
     </button>
+
 </form>
 </div>
 
 <script>
-// Initialize map
 let map = L.map('map').setView([11.5564, 104.9282], 12);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -234,29 +230,45 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let marker, circle;
 
-// Get user location
-if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(function(position){
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        document.getElementById('location').value = lat.toFixed(6) + "," + lng.toFixed(6);
-        map.setView([lat, lng], 16);
-
-        marker = L.marker([lat, lng]).addTo(map);
-        circle = L.circle([lat, lng], {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.3,
-            radius: 50
-        }).addTo(map);
-
-    }, function(error){
-        alert("Unable to retrieve your location. Please allow location access.");
-    });
-} else {
-    alert("Geolocation is not supported by your browser.");
+function clearGuest(){
+    const input = document.getElementById("nameInput");
+    if(input.value === "Guest"){
+        input.value = "";
+    }
 }
+
+function loadLocation(){
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(position){
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            document.getElementById('location').value = 
+                lat.toFixed(6) + "," + lng.toFixed(6);
+
+            map.setView([lat, lng], 16);
+
+            if(marker) map.removeLayer(marker);
+            if(circle) map.removeLayer(circle);
+
+            marker = L.marker([lat, lng]).addTo(map);
+            circle = L.circle([lat, lng], {
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.3,
+                radius: 50
+            }).addTo(map);
+        }, function(){
+            alert("Please allow location access.");
+        });
+    }
+}
+
+function refreshMap(){
+    loadLocation();
+}
+
+loadLocation();
 </script>
 
 <?php include 'includes/footer.php'; ?>
