@@ -4,25 +4,28 @@ FROM php:8.2-apache
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy project files to container
+# Copy project files
 COPY . .
 
-# Install mysqli extension for MySQL
-RUN docker-php-ext-install mysqli
+# Install required PHP extensions
+RUN apt-get update && apt-get install -y \
+    zip unzip curl git libzip-dev \
+    && docker-php-ext-install mysqli pdo pdo_mysql zip \
+    && docker-php-ext-enable mysqli pdo_mysql
 
 # Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && php -r "unlink('composer-setup.php');"
 
-# Install PHP dependencies from composer.json
+# Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Enable Apache mod_rewrite (optional)
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Expose default Apache port
+# Expose Apache port
 EXPOSE 80
 
-# Start Apache in foreground
+# Start Apache
 CMD ["apache2-foreground"]
