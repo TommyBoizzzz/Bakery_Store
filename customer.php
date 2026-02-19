@@ -16,10 +16,6 @@ foreach($cart as $item){
 }
 
 // ==================== TELEGRAM CONFIG ====================
-$botToken = "6547207545:AAGXrorwSAM-A7khdiVCfv11OpoW6RezSs4";
-$groupID  = -1003558482464;
-$topicID  = 2;
-
 function sendTelegramMessage($message){
     global $botToken, $groupID, $topicID;
 
