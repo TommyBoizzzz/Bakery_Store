@@ -20,16 +20,76 @@ $ownerTelegram = "https://t.me/";
 <head>
 <title>Order Details - #<?= $order_id ?></title>
 <style>
-body{font-family:Poppins,sans-serif;background:#f7efe5;padding:20px;margin:0;}
-.container{max-width:800px;margin:auto;background:white;padding:20px;border-radius:12px;box-shadow:0 0 15px rgba(0,0,0,0.1);}
-h2,h3{color:#4b2e2e;text-align:center;margin:5px 0;}
-table{width:100%;border-collapse:collapse;margin-top:20px;}
-th,td{padding:12px;border:1px solid #c19a6b;text-align:center;}
-th{background:#4b2e2e;color:white;}
-.total{font-weight:bold;}
-.btn-telegram{display:inline-block;margin-top:20px;padding:12px 25px;background:#0088cc;color:white;border-radius:12px;text-decoration:none;text-align:center;font-weight:600;}
-.btn-telegram:hover{opacity:0.85;}
-.back-btn{display:inline-block;margin-top:10px;padding:8px 16px;background:#4b2e2e;color:white;border-radius:8px;text-decoration:none;}
+body{
+    font-family:Poppins,sans-serif;
+    background:#f7efe5;
+    padding:20px;
+    margin:0;
+}
+.container{
+    max-width:800px;
+    margin:auto;
+    background:white;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 0 15px rgba(0,0,0,0.1);
+}
+h2,h3{
+    color:#4b2e2e;
+    text-align:center;
+    margin:5px 0;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+th,td{
+    padding:12px;
+    border:1px solid #c19a6b;
+    text-align:center;
+}
+th{
+    background:#4b2e2e;
+    color:white;
+}
+.total{
+    font-weight:bold;
+}
+
+/* Buttons container: left & right */
+.button-row{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20px;
+    gap:10px;
+}
+
+.back-btn,
+.btn-telegram{
+    display:inline-block;
+    padding:12px 25px;
+    border-radius:12px;
+    font-weight:600;
+    text-decoration:none;
+    flex:1;
+    text-align:center;
+}
+
+.back-btn{
+    background:#4b2e2e;
+    color:white;
+}
+
+.btn-telegram{
+    background:#0088cc;
+    color:white;
+}
+
+.back-btn:hover,
+.btn-telegram:hover{
+    opacity:0.85;
+}
 
 /* ===== Responsive for screens <= 430px ===== */
 @media screen and (max-width:430px){
@@ -37,7 +97,7 @@ th{background:#4b2e2e;color:white;}
         display:block;
         width:100%;
     }
-    thead tr {display:none;} /* hide table headers */
+    thead tr {display:none;} 
     tr {margin-bottom:15px; border:1px solid #c19a6b; border-radius:12px; padding:10px;}
     td{
         text-align:right;
@@ -56,6 +116,11 @@ th{background:#4b2e2e;color:white;}
         text-align:left;
     }
     td:last-child{border-bottom:none;}
+
+    /* Keep buttons in one row even on mobile */
+    .button-row{
+        flex-direction:row;
+    }
 }
 </style>
 </head>
@@ -100,9 +165,10 @@ th{background:#4b2e2e;color:white;}
         </tbody>
     </table>
 
-    <a href="<?= $ownerTelegram ?>" class="btn-telegram" target="_blank">💬 Chat with Owner</a>
-    <br>
-    <a href="products.php" class="back-btn">← Back to Products</a>
+    <div class="button-row">
+        <a href="products.php" class="back-btn">← Back to Products</a>
+        <a href="<?= $ownerTelegram ?>" class="btn-telegram" target="_blank">💬 Chat with Owner</a>
+    </div>
 </div>
 
 </body>

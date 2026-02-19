@@ -92,7 +92,7 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
 <h2>Your Cart</h2>
 
 <?php if(empty($cart)): ?>
-<p style="text-align:center;">Cart is empty. <a href="product.php">Go Shopping</a></p>
+<p style="text-align:center;">Cart is empty. <a href="products.php">Go Shopping</a></p>
 <?php else: ?>
 <form method="POST" action="">
 <table class="cart-table">

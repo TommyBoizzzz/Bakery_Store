@@ -145,11 +145,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
     <a href="cart.php" 
        class="nav-link <?php if($current_page=='cart.php') echo 'active'; ?>">
-       View Cart
+       Carts
     </a>
 
     <a href="booking.php" 
        class="nav-link <?php if($current_page=='booking.php') echo 'active'; ?>">
-       My Booking
+       Booking
     </a>
 </nav>
