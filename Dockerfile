@@ -1,13 +1,11 @@
-# Use official PHP 8.2 image with Apache
 FROM php:8.2-apache
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project files
+# Copy all files into container
 COPY . .
 
-# Install required system packages and PHP extensions
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     zip unzip curl git libzip-dev libpq-dev \
     && docker-php-ext-install pdo pdo_pgsql pgsql zip \
@@ -21,11 +19,12 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Enable Apache mod_rewrite
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Expose Apache port
-EXPOSE 80
+# Explicitly set DocumentRoot
+ENV APACHE_DOCUMENT_ROOT /var/www/html
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 
-# Start Apache
+EXPOSE 80
 CMD ["apache2-foreground"]
