@@ -1,8 +1,9 @@
 FROM php:8.2-apache
 
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy all files into container
+# Copy project files
 COPY . .
 
 # Install dependencies
@@ -19,12 +20,13 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
 # Install Composer dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Enable Apache rewrite
+# Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
-# Explicitly set DocumentRoot
-ENV APACHE_DOCUMENT_ROOT /var/www/html
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
+# Allow .htaccess overrides
+RUN sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/apache2.conf
 
+# Expose port 80
 EXPOSE 80
+
 CMD ["apache2-foreground"]
