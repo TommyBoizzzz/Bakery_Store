@@ -1,23 +1,30 @@
 <?php
+session_start();
 include 'config/db.php';
 
-// Get order ID
+// ==================== GET ORDER ====================
 $order_id = intval($_GET['id']);
-$order = mysqli_fetch_assoc(mysqli_query($conn, "SELECT * FROM orders WHERE id=$order_id"));
+$stmt = $conn->prepare("SELECT * FROM orders WHERE id = ?");
+$stmt->execute([$order_id]);
+$order = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if(!$order){
     die("Order not found!");
 }
 
-// Get order items
-$items = mysqli_query($conn, "SELECT * FROM order_items WHERE order_id=$order_id");
+// ==================== GET ORDER ITEMS ====================
+$item_stmt = $conn->prepare("SELECT * FROM order_items WHERE order_id = ?");
+$item_stmt->execute([$order_id]);
+$items = $item_stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Telegram link for owner
-$ownerTelegram = "https://t.me/"; 
+// ==================== TELEGRAM LINK ====================
+$ownerTelegram = "https://t.me/LUYNALIN"; // change to your telegram username
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Order Details - #<?= $order_id ?></title>
 <style>
 body{
@@ -128,7 +135,7 @@ th{
 
 <div class="container">
     <h2>🎉 Order Placed Successfully!</h2>
-    <h3>Order ID: #<?= $order['id'] ?></h3>
+    <h3>Order ID: #<?= htmlspecialchars($order['id']) ?></h3>
 
     <p><strong>Name:</strong> <?= htmlspecialchars($order['name']) ?></p>
     <p><strong>Phone:</strong> <?= htmlspecialchars($order['phone']) ?></p>
@@ -147,7 +154,7 @@ th{
         <tbody>
         <?php 
         $total = 0;
-        while($row = mysqli_fetch_assoc($items)):
+        foreach($items as $row):
             $subtotal = $row['price'] * $row['qty'];
             $total += $subtotal;
         ?>
@@ -157,7 +164,7 @@ th{
             <td data-label="Qty"><?= $row['qty'] ?></td>
             <td data-label="Subtotal">$<?= number_format($subtotal,2) ?></td>
         </tr>
-        <?php endwhile; ?>
+        <?php endforeach; ?>
         <tr>
             <td colspan="3" class="total">Total</td>
             <td class="total">$<?= number_format($total,2) ?></td>

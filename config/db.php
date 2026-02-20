@@ -6,10 +6,18 @@ if (file_exists(__DIR__ . '/../.env')) {
     $dotenv->load();
 }
 
-$conn = new mysqli($_ENV['DB_HOST'], $_ENV['DB_USER'], $_ENV['DB_PASS'], $_ENV['DB_NAME']);
+try {
+    $dsn = "pgsql:host=" . $_ENV['DB_HOST'] . 
+           ";port=" . $_ENV['DB_PORT'] . 
+           ";dbname=" . $_ENV['DB_NAME'];
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    $conn = new PDO($dsn, $_ENV['DB_USER'], $_ENV['DB_PASS']);
+
+    // Set error mode
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+} catch (PDOException $e) {
+    die("Connection failed: " . $e->getMessage());
 }
 
 $botToken = $_ENV['BOT_TOKEN'];

@@ -1,6 +1,7 @@
 <?php
 session_start();
-include 'config/db.php';
+require 'config/db.php'; // PDO PostgreSQL connection
+include 'includes/header.php';
 
 // ==================== CART CHECK ====================
 $cart = $_SESSION['cart'] ?? [];
@@ -20,7 +21,6 @@ function sendTelegramMessage($message){
     global $botToken, $groupID, $topicID;
 
     $url = "https://api.telegram.org/bot".$botToken."/sendMessage";
-
     $data = [
         'chat_id' => $groupID,
         'message_thread_id' => $topicID,
@@ -48,7 +48,7 @@ function sendTelegramMessage($message){
 // ==================== PLACE ORDER ====================
 if(isset($_POST['place_order'])){
 
-    $name = trim($_POST['name']);
+    $name = trim($_POST['name']) ?: "Guest";
     $phone = trim($_POST['phone']);
     $payment_method = $_POST['payment_method'] ?? '';
     $location = $_POST['location'];
@@ -62,64 +62,80 @@ if(isset($_POST['place_order'])){
         die("Please enter your real name for Bank Transfer.");
     }
 
-    if(empty($name)){
-        $name = "Guest";
+    try {
+        // ================= START TRANSACTION =================
+        $conn->beginTransaction();
+
+        // ================= INSERT ORDER =================
+        $stmt = $conn->prepare("
+            INSERT INTO orders
+            (name, phone, payment_method, location, total, status, created_at)
+            VALUES (:name, :phone, :payment_method, :location, :total, :status, NOW())
+        ");
+
+        $stmt->execute([
+            ':name' => $name,
+            ':phone' => $phone,
+            ':payment_method' => $payment_method,
+            ':location' => $location,
+            ':total' => $total,
+            ':status' => 'Pending'
+        ]);
+
+        $order_id = $conn->lastInsertId();
+
+        // ================= INSERT ORDER ITEMS =================
+        $item_stmt = $conn->prepare("
+            INSERT INTO order_items 
+            (order_id, product_id, product_name, price, qty, subtotal) 
+            VALUES (:order_id, :product_id, :product_name, :price, :qty, :subtotal)
+        ");
+
+        foreach($cart as $item){
+            $item_stmt->execute([
+                ':order_id' => $order_id,
+                ':product_id' => $item['id'],
+                ':product_name' => $item['name'],
+                ':price' => $item['price'],
+                ':qty' => $item['qty'],
+                ':subtotal' => $item['price'] * $item['qty']
+            ]);
+        }
+
+        // ================= SEND TELEGRAM =================
+        $map_link = "https://www.google.com/maps/search/?api=1&query=" . $location;
+        $message  = "🍰 <b>New Order - BaBBoB Bakery</b>\n\n";
+        $message .= "🆔 Order ID: #".$order_id."\n";
+        $message .= "👤 Name: ".$name."\n";
+        $message .= "📞 Phone: ".$phone."\n";
+        $message .= "💳 Payment: ".$payment_method."\n";
+        $message .= "📍 Location: <a href='".$map_link."'>View Map</a>\n";
+        $message .= "💰 Total: $".number_format($total,2)."\n";
+        $message .= "📦 Status: Pending";
+        sendTelegramMessage($message);
+
+        // ================= COMMIT TRANSACTION =================
+        $conn->commit();
+
+        // ================= CLEAR CART =================
+        unset($_SESSION['cart']);
+
+        // ================= REDIRECT =================
+        if($payment_method === "Bank Transfer"){
+            header("Location: bank.php?id=".$order_id);
+        } else {
+            header("Location: recipe.php?id=".$order_id);
+        }
+        exit;
+
+    } catch(PDOException $e){
+        $conn->rollBack();
+        die("Order failed: ".$e->getMessage());
     }
-
-    // ================= INSERT ORDER =================
-    $stmt = $conn->prepare("
-        INSERT INTO orders 
-        (name, phone, payment_method, location, total, created_at, status) 
-        VALUES (?,?,?,?,?,NOW(),'Pending')
-    ");
-    $stmt->bind_param("ssssd", $name, $phone, $payment_method, $location, $total);
-    $stmt->execute();
-    $order_id = $stmt->insert_id;
-
-    // ================= INSERT ORDER ITEMS =================
-    $item_stmt = $conn->prepare("
-        INSERT INTO order_items 
-        (order_id, product_id, product_name, price, qty, subtotal) 
-        VALUES (?,?,?,?,?,?)
-    ");
-    foreach($cart as $item){
-        $product_id = $item['id'];
-        $product_name = $item['name'];
-        $price = $item['price'];
-        $qty = $item['qty'];
-        $subtotal = $price * $qty;
-
-        $item_stmt->bind_param("iisdid", $order_id, $product_id, $product_name, $price, $qty, $subtotal);
-        $item_stmt->execute();
-    }
-
-    // ================= SEND TELEGRAM =================
-    $map_link = "https://www.google.com/maps/search/?api=1&query=" . $location;
-    $message  = "🍰 <b>New Order - BaBBoB Bakery</b>\n\n";
-    $message .= "🆔 Order ID: #".$order_id."\n";
-    $message .= "👤 Name: ".$name."\n";
-    $message .= "📞 Phone: ".$phone."\n";
-    $message .= "💳 Payment: ".$payment_method."\n";
-    $message .= "📍 Location: <a href='".$map_link."'>View Map</a>\n";
-    $message .= "💰 Total: $".number_format($total,2)."\n";
-    $message .= "📦 Status: Pending";
-    sendTelegramMessage($message);
-
-    // ================= CLEAR CART =================
-    unset($_SESSION['cart']);
-
-    // ================= REDIRECT =================
-    if($payment_method === "Bank Transfer"){
-        header("Location: bank.php?id=".$order_id);
-    } else {
-        header("Location: recipe.php?id=".$order_id);
-    }
-    exit;
 }
-
-include 'includes/header.php';
 ?>
 
+<!-- ==================== CUSTOMER FORM ==================== -->
 <style>
 body{background:#f7efe5; font-family:'Poppins',sans-serif;}
 .cart-container{max-width:700px; margin:30px auto; padding:20px; background:white; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
@@ -219,7 +235,6 @@ function paymentChanged(){
     }
 }
 
-// ========== CLIENT-SIDE VALIDATION ==========
 function validateForm(){
     const payment = document.getElementById("paymentSelect").value;
     const nameInput = document.getElementById("nameInput");
@@ -227,9 +242,9 @@ function validateForm(){
     if(payment === "Bank Transfer" && (nameInput.value.trim() === "" || nameInput.value === "Guest")){
         nameInput.placeholder = "Please enter your real name for Bank Transfer";
         nameInput.focus();
-        return false; // stop form submission
+        return false;
     }
-    return true; // allow submission
+    return true;
 }
 
 loadLocation();

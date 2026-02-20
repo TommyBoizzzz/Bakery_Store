@@ -1,57 +1,86 @@
 <?php
-include "../config/db.php";
+include "../config/db.php";   // PDO pgsql connection
 include "Authencation/auth.php";
 
-// Folder for storing uploaded images
 $uploadFolder = "assets/images_slide/";
-if(!is_dir($uploadFolder)) mkdir($uploadFolder,0755,true);
+if(!is_dir($uploadFolder)){
+    mkdir($uploadFolder,0755,true);
+}
 
-// ADD SLIDE
+/* ================= ADD SLIDE ================= */
 if(isset($_POST['add'])){
-    $image = "";
-
     if(!empty($_FILES['image']['name'])){
-        $image = time() . "_" . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
-    }
 
-    mysqli_query($conn, "INSERT INTO images_slide (image) VALUES ('$image')");
-    header("Location: Poster.php"); exit();
-}
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $allowed = ['jpg','jpeg','png','webp'];
 
-// UPDATE SLIDE
-if(isset($_POST['update'])){
-    $id = $_POST['id'];
+        if(in_array(strtolower($ext), $allowed)){
 
-    if(!empty($_FILES['image']['name'])){
-        $res = mysqli_query($conn, "SELECT image FROM images_slide WHERE id=$id");
-        $old = mysqli_fetch_assoc($res);
-        if($old && !empty($old['image'])){
-            $imgPath = $uploadFolder.$old['image'];
-            if(file_exists($imgPath)) unlink($imgPath);
+            $image = time() . "_" . uniqid() . "." . $ext;
+            move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
+
+            $stmt = $conn->prepare("INSERT INTO images_slide (image) VALUES (:image)");
+            $stmt->execute(['image'=>$image]);
         }
-        $image = time() . "_" . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
-        mysqli_query($conn,"UPDATE images_slide SET image='$image' WHERE id=$id");
     }
-    header("Location: Poster.php"); exit();
+    header("Location: Poster.php");
+    exit();
 }
 
-// DELETE SLIDE
+/* ================= UPDATE SLIDE ================= */
+if(isset($_POST['update'])){
+    $id = intval($_POST['id']);
+
+    if(!empty($_FILES['image']['name'])){
+
+        $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
+        $stmt->execute(['id'=>$id]);
+        $old = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($old && !empty($old['image'])){
+            $oldPath = $uploadFolder.$old['image'];
+            if(file_exists($oldPath)) unlink($oldPath);
+        }
+
+        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+        $image = time() . "_" . uniqid() . "." . $ext;
+
+        move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
+
+        $stmt = $conn->prepare("UPDATE images_slide SET image=:image WHERE id=:id");
+        $stmt->execute([
+            'image'=>$image,
+            'id'=>$id
+        ]);
+    }
+
+    header("Location: Poster.php");
+    exit();
+}
+
+/* ================= DELETE SLIDE ================= */
 if(isset($_GET['delete'])){
-    $id = $_GET['delete'];
-    $res = mysqli_query($conn,"SELECT image FROM images_slide WHERE id=$id");
-    $row = mysqli_fetch_assoc($res);
+    $id = intval($_GET['delete']);
+
+    $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
+    $stmt->execute(['id'=>$id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
     if($row && !empty($row['image'])){
         $imgPath = $uploadFolder.$row['image'];
         if(file_exists($imgPath)) unlink($imgPath);
     }
-    mysqli_query($conn,"DELETE FROM images_slide WHERE id=$id");
-    header("Location: Poster.php"); exit();
+
+    $stmt = $conn->prepare("DELETE FROM images_slide WHERE id=:id");
+    $stmt->execute(['id'=>$id]);
+
+    header("Location: Poster.php");
+    exit();
 }
 
-// FETCH SLIDES
-$slides = mysqli_query($conn,"SELECT * FROM images_slide ORDER BY id DESC");
+/* ================= FETCH SLIDES ================= */
+$stmt = $conn->query("SELECT * FROM images_slide ORDER BY id DESC");
+$slides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -94,18 +123,12 @@ header{
 th{background:#4b2e2e;color:#fff;padding:14px;border:1px solid #c19a6b;}
 td{padding:12px;border:1px solid #c19a6b;text-align:center;}
 img{width:120px;border-radius:6px;}
-.edit{background:#0095ff;color:#fff;padding:6px 10px;border-radius:6px;text-decoration:none;}
+.edit{background:#0095ff;color:#fff;padding:6px 10px;border-radius:6px;text-decoration:none;cursor:pointer;}
 .delete{background:#b33939;color:#fff;padding:6px 10px;border-radius:6px;text-decoration:none;}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);justify-content:center;align-items:center;}
 .modal-content{background:#fff;padding:25px;width:100%;max-width:400px;border-radius:12px;}
 .modal-content input{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:1px solid #c19a6b;}
 .submit-btn{background:linear-gradient(135deg,#4b2e2e,#c19a6b);color:#fff;border:none;padding:12px;width:100%;border-radius:8px;cursor:pointer;}
-@media (max-width:768px){
-    header{font-size:20px;padding:20px 20px;}
-    .table-scroll table{min-width:400px;}
-    .search-box{flex:60%;}
-    .add-btn{flex:40%;}
-}
 </style>
 </head>
 <body>
@@ -131,16 +154,22 @@ POSTER MANAGEMENT
 <th>Image</th>
 <th>Action</th>
 </tr>
-<?php $i=1; while($row=mysqli_fetch_assoc($slides)): ?>
+
+<?php $i=1; foreach($slides as $row): ?>
 <tr>
 <td><?= $i++ ?></td>
-<td><img src="<?= $uploadFolder.$row['image'] ?>" alt=""></td>
+<td>
+<?php if(!empty($row['image'])): ?>
+<img src="<?= htmlspecialchars($uploadFolder.$row['image']) ?>" alt="">
+<?php endif; ?>
+</td>
 <td>
 <a class="edit" onclick="openModal('<?= $row['id'] ?>')">Edit</a>
 <a class="delete" href="?delete=<?= $row['id'] ?>" onclick="return confirm('Delete this poster?')">Delete</a>
 </td>
 </tr>
-<?php endwhile; ?>
+<?php endforeach; ?>
+
 </table>
 </div>
 </div>

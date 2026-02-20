@@ -1,17 +1,16 @@
 <?php
 session_start();
-include 'config/db.php';
+include 'config/db.php'; // PDO
+include 'includes/header.php';
 
 // ==================== CART LOGIC ====================
 
 // Add to cart
 if(isset($_POST['add_to_cart'])){
     $id = intval($_POST['product_id']);
-    $stmt = $conn->prepare("SELECT * FROM products WHERE id=?");
-    $stmt->bind_param("i",$id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $product = $result->fetch_assoc();
+    $stmt = $conn->prepare("SELECT * FROM products WHERE id=:id");
+    $stmt->execute(['id'=>$id]);
+    $product = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if($product){
         if(!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
@@ -54,8 +53,6 @@ if(isset($_POST['checkout'])){
 $cart = $_SESSION['cart'] ?? [];
 $total = 0;
 foreach($cart as $item) $total += $item['price']*$item['qty'];
-
-include 'includes/header.php';
 ?>
 
 <style>
@@ -74,8 +71,6 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
 .btn-checkout:hover,.remove-btn:hover{opacity:0.8;}
 .update-btn{background:#8b5e3c;border:none;padding:8px 20px;border-radius:20px;color:white;cursor:pointer;}
 .update-btn:hover{opacity:0.8;}
-
-/* ===== Responsive for 430px screens ===== */
 @media screen and (max-width: 450px){
     .cart-container{padding:0 10px;margin:20px auto;}
     .cart-table{display:block;overflow-x:auto;font-size:12px;}
@@ -111,12 +106,12 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
             $subtotal = $item['price']*$item['qty'];
         ?>
         <tr>
-            <td><img src="assets/images/<?php echo $item['image']; ?>" class="cart-img"></td>
-            <td><?php echo htmlspecialchars($item['name']); ?></td>
-            <td><?php echo number_format($item['price'],2); ?></td>
-            <td><input type="number" name="qty[<?php echo $id; ?>]" class="qty-input" value="<?php echo $item['qty']; ?>" min="1"></td>
-            <td class="subtotal"><?php echo number_format($subtotal,2); ?></td>
-            <td><a href="?remove=<?php echo $id; ?>" class="remove-btn">Remove</a></td>
+            <td><img src="assets/images/<?= htmlspecialchars($item['image']) ?>" class="cart-img"></td>
+            <td><?= htmlspecialchars($item['name']) ?></td>
+            <td><?= number_format($item['price'],2) ?></td>
+            <td><input type="number" name="qty[<?= $id ?>]" class="qty-input" value="<?= $item['qty'] ?>" min="1"></td>
+            <td class="subtotal"><?= number_format($subtotal,2) ?></td>
+            <td><a href="?remove=<?= $id ?>" class="remove-btn">Remove</a></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
@@ -124,11 +119,9 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
 
 <div class="cart-footer">
     <div class="total" id="cart-total">
-        Total: $<?php echo number_format($total,2); ?>
+        Total: $<?= number_format($total,2) ?>
     </div>
-    <button type="submit" name="checkout" class="btn-checkout">
-        Checkout
-    </button>
+    <button type="submit" name="checkout" class="btn-checkout">Checkout</button>
 </div>
 
 </form>
@@ -148,7 +141,6 @@ qtyInputs.forEach(input=>{
         const subtotal = price*qty;
         row.querySelector('.subtotal').innerText = subtotal.toFixed(2);
 
-        // Recalculate total
         let total=0;
         document.querySelectorAll('.subtotal').forEach(st=>total+=parseFloat(st.innerText));
         document.getElementById('cart-total').innerText='Total: $'+total.toFixed(2);

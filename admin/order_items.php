@@ -1,9 +1,22 @@
 <?php
-include "../config/db.php";
+include "../config/db.php";   // PDO connection
 include "Authencation/auth.php";
 
-$id = intval($_GET['id']);
-$order = mysqli_fetch_assoc(mysqli_query($conn,"SELECT * FROM orders WHERE id=$id"));
+$id = intval($_GET['id'] ?? 0);
+
+// ================= GET ORDER =================
+$stmt = $conn->prepare("SELECT * FROM orders WHERE id = :id");
+$stmt->execute(['id' => $id]);
+$order = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if(!$order){
+    die("Order not found.");
+}
+
+// ================= GET ORDER ITEMS =================
+$stmtItems = $conn->prepare("SELECT * FROM order_items WHERE order_id = :id");
+$stmtItems->execute(['id' => $id]);
+$orderItems = $stmtItems->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -19,7 +32,6 @@ body{
     margin:0;
 }
 
-/* Back button */
 .back{
     background:#4b2e2e;
     color:#fff;
@@ -34,7 +46,6 @@ body{
     background:#3a1f1f;
 }
 
-/* Table styles */
 .table-scroll{
     width:100%;
     overflow-x:auto;
@@ -60,14 +71,13 @@ th{
     color:#fff;
 }
 
-/* ===== Responsive for small screens (≤430px) ===== */
 @media(max-width:430px){
     table, thead, tbody, th, td, tr{
         display:block;
     }
 
     thead tr{
-        display:none; /* hide table header */
+        display:none;
     }
 
     td{
@@ -110,17 +120,15 @@ th{
 <th>Total</th>
 </tr>
 
-<?php
-$items = mysqli_query($conn,"SELECT * FROM order_items WHERE order_id=$id");
-while($row=mysqli_fetch_assoc($items)):
-?>
+<?php foreach($orderItems as $row): ?>
 <tr>
 <td><?= htmlspecialchars($row['product_name']) ?></td>
 <td>$<?= number_format($row['price'],2) ?></td>
 <td><?= $row['qty'] ?></td>
 <td>$<?= number_format($row['price'] * $row['qty'],2) ?></td>
 </tr>
-<?php endwhile; ?>
+<?php endforeach; ?>
+
 </table>
 </div>
 

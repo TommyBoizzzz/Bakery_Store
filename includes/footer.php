@@ -33,7 +33,7 @@ footer a:hover {
     <br><br>
     <div class="footer-icons">
         <!-- Telegram link -->
-        <a href="https://t.me/" target="_blank">
+        <a href="https://t.me/LUYNALIN" target="_blank">
             <img src="assets/images_app/telegram-icon.png" alt="Telegram"> Chat Owner
         </a>
 

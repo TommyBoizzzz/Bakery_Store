@@ -1,24 +1,28 @@
 <?php
 session_start();
-include 'config/db.php';
+include 'config/db.php'; // PDO connection
 include 'includes/header.php';
 
-// Fetch products with categories
-$sql = "
-    SELECT p.*, c.name AS category_name
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.id
-    ORDER BY p.id DESC
-";
-$result = $conn->query($sql);
+try {
+    // Fetch products with categories
+    $stmt = $conn->query("
+        SELECT p.*, c.name AS category_name
+        FROM products p
+        LEFT JOIN categories c ON p.category_id = c.id
+        ORDER BY p.id DESC
+    ");
+    $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$products = [];
-$categories = [];
-while ($row = $result->fetch_assoc()) {
-    $products[] = $row;
-    if ($row['category_name']) $categories[$row['category_name']] = true;
+    // Collect unique categories
+    $categories = [];
+    foreach ($products as $row) {
+        if ($row['category_name']) $categories[$row['category_name']] = true;
+    }
+    $categories = array_keys($categories);
+
+} catch (PDOException $e) {
+    die("Error fetching products: " . $e->getMessage());
 }
-$categories = array_keys($categories);
 ?>
 
 <style>
@@ -58,7 +62,7 @@ body{ overflow-y:scroll; }
     <div class="category-tabs" id="categoryTabs">
         <button class="active" data-category="all">All</button>
         <?php foreach($categories as $cat): ?>
-            <button data-category="<?php echo $cat; ?>"><?php echo $cat; ?></button>
+            <button data-category="<?= htmlspecialchars($cat) ?>"><?= htmlspecialchars($cat) ?></button>
         <?php endforeach; ?>
     </div>
 </div>
@@ -66,25 +70,28 @@ body{ overflow-y:scroll; }
 <section class="products" id="productList">
 <?php foreach($products as $row): ?>
 <div class="product"
-     data-name="<?php echo strtolower($row['name']); ?>"
-     data-category="<?php echo $row['category_name']; ?>">
+     data-name="<?= strtolower(htmlspecialchars($row['name'])) ?>"
+     data-category="<?= htmlspecialchars($row['category_name']) ?>">
     
     <!-- Clickable Image -->
-    <a href="assets/images/<?php echo $row['image']; ?>" target="_blank">
-        <img src="assets/images/<?php echo $row['image']; ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
+    <a href="assets/images/<?= htmlspecialchars($row['image']) ?>" target="_blank">
+        <img src="assets/images/<?= htmlspecialchars($row['image']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
     </a>
 
     <div class="product-body">
-        <h3><?php echo htmlspecialchars($row['name']); ?></h3>
-        <div class="category-text"><?php echo $row['category_name']; ?></div>
+        <h3><?= htmlspecialchars($row['name']) ?></h3>
+        <div class="category-text"><?= htmlspecialchars($row['category_name']) ?></div>
         <div class="desc">
-            <?php $desc=$row['description']; echo strlen($desc)>15 ? substr($desc,0,15).'...' : $desc; ?>
+            <?php 
+            $desc = $row['description']; 
+            echo strlen($desc) > 15 ? substr($desc,0,15).'...' : htmlspecialchars($desc); 
+            ?>
         </div>
-        <div class="price">$<?php echo number_format($row['price'],2); ?></div>
+        <div class="price">$<?= number_format($row['price'],2) ?></div>
 
         <!-- Add to Cart Form -->
         <form method="POST" action="cart.php">
-            <input type="hidden" name="product_id" value="<?php echo $row['id']; ?>">
+            <input type="hidden" name="product_id" value="<?= $row['id'] ?>">
             <button type="submit" name="add_to_cart" class="btn btn-cart">Add to Cart</button>
         </form>
     </div>

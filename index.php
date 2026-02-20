@@ -1,14 +1,13 @@
 <?php include 'includes/header.php'; ?>
 <?php
-include 'config/db.php';
+include 'config/db.php'; // PDO connection
 
 // Fetch all slides
-$slides_res = mysqli_query($conn, "SELECT * FROM images_slide ORDER BY id ASC");
-$slides = [];
-if($slides_res){
-    while($row = mysqli_fetch_assoc($slides_res)){
-        $slides[] = $row;
-    }
+try {
+    $stmt = $conn->query("SELECT * FROM images_slide ORDER BY id ASC");
+    $slides = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Error fetching slides: " . $e->getMessage());
 }
 ?>
 
@@ -17,8 +16,8 @@ if($slides_res){
     <div class="slides" id="slides" style="display:flex;transition:0.5s ease;">
         <?php if(!empty($slides)): ?>
             <?php foreach($slides as $slide): ?>
-                <div class="slide" style="min-width:100%; min-height : 210px; position:relative;">
-                    <img src="admin/assets/images_slide/<?= $slide['image'] ?>" style="width:100%;border-radius:12px;">
+                <div class="slide" style="min-width:100%; min-height:210px; position:relative;">
+                    <img src="admin/assets/images_slide/<?= htmlspecialchars($slide['image']) ?>" style="width:100%;border-radius:12px;">
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
@@ -26,7 +25,7 @@ if($slides_res){
         <?php endif; ?>
     </div>
     
-    <!-- Optional navigation buttons -->
+    <!-- Navigation buttons -->
     <button id="prev" style="position:absolute;top:50%;left:10px;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;padding:10px;border:none;border-radius:50%;cursor:pointer;">&#10094;</button>
     <button id="next" style="position:absolute;top:50%;right:10px;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;padding:10px;border:none;border-radius:50%;cursor:pointer;">&#10095;</button>
 </div>

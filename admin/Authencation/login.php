@@ -1,25 +1,40 @@
 <?php
 session_start();
-include __DIR__ . "/../../config/db.php";
+include __DIR__ . "/../../config/db.php"; // This should now use PDO (pgsql)
 
 $error = '';
 
 if (isset($_POST['login'])) {
 
-    $username = $conn->real_escape_string($_POST['username']);
-    $password = md5($_POST['password']);
+    $username = $_POST['username'];
+    $password = md5($_POST['password']); // (we will improve this later)
 
-    $sql = "SELECT * FROM admins WHERE username='$username' AND password='$password'";
-    $result = $conn->query($sql);
+    try {
 
-    if ($result && $result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $_SESSION['user_id'] = $row['id'];
-        $_SESSION['username'] = $row['username'];
-        header("Location: ../home.php");
-        exit;
-    } else {
-        $error = "❌ Wrong username or password";
+        $sql = "SELECT * FROM admins 
+                WHERE username = :username 
+                AND password = :password";
+
+        $stmt = $conn->prepare($sql);
+
+        $stmt->execute([
+            ':username' => $username,
+            ':password' => $password
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            $_SESSION['user_id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            header("Location: ../home.php");
+            exit;
+        } else {
+            $error = "❌ Wrong username or password";
+        }
+
+    } catch (PDOException $e) {
+        die("Error: " . $e->getMessage());
     }
 }
 ?>
