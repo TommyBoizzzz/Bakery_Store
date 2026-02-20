@@ -7,11 +7,11 @@ WORKDIR /var/www/html
 # Copy project files
 COPY . .
 
-# Install required PHP extensions
+# Install required system packages and PHP extensions
 RUN apt-get update && apt-get install -y \
-    zip unzip curl git libzip-dev \
-    && docker-php-ext-install mysqli pdo pdo_mysql zip \
-    && docker-php-ext-enable mysqli pdo_mysql
+    zip unzip curl git libzip-dev libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip \
+    && docker-php-ext-enable pdo_pgsql pgsql
 
 # Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
