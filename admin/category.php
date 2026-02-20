@@ -84,7 +84,7 @@ td:nth-child(2){text-align:left;}
 <body>
 
 <header>
-    <button class="back-btn" onclick="window.location.href='Home.php'">
+    <button class="back-btn" onclick="window.location.href='home.php'">
         ← <span>BACK</span>
     </button>
     CATEGORY MANAGEMENT

@@ -24,6 +24,11 @@ RUN composer install --no-dev --optimize-autoloader
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Create assets folder and give Apache permissions
+RUN mkdir -p /var/www/html/assets/images \
+    && chown -R www-data:www-data /var/www/html/assets \
+    && chmod -R 755 /var/www/html/assets
+
 # Expose Apache port
 EXPOSE 80
 
