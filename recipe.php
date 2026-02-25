@@ -47,10 +47,20 @@ h2,h3{
     text-align:center;
     margin:5px 0;
 }
+p{
+    margin:5px 0;
+}
+
+/* Scrollable table wrapper */
+.table-responsive{
+    overflow-x:auto;
+    -webkit-overflow-scrolling: touch;
+    margin-top:20px;
+}
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:20px;
+    min-width:500px; /* ensures table doesn't shrink too much */
 }
 th,td{
     padding:12px;
@@ -72,7 +82,6 @@ th{
     margin-top:20px;
     gap:10px;
 }
-
 .back-btn,
 .btn-telegram{
     display:inline-block;
@@ -83,17 +92,14 @@ th{
     flex:1;
     text-align:center;
 }
-
 .back-btn{
     background:#4b2e2e;
     color:white;
 }
-
 .btn-telegram{
     background:#0088cc;
     color:white;
 }
-
 .back-btn:hover,
 .btn-telegram:hover{
     opacity:0.85;
@@ -101,41 +107,22 @@ th{
 
 /* ===== Responsive for screens <= 430px ===== */
 @media screen and (max-width:430px){
-    table, thead, tbody, th, td, tr {
-        display:block;
-        width:100%;
-    }
-    thead tr {display:none;} 
-    tr {margin-bottom:15px; border:1px solid #c19a6b; border-radius:12px; padding:10px;}
-    td{
-        text-align:right;
-        padding-left:50%;
-        position:relative;
-        border:none;
-        border-bottom:1px solid #c19a6b;
-    }
-    td::before{
-        content: attr(data-label);
-        position:absolute;
-        left:10px;
-        width:45%;
-        padding-left:10px;
-        font-weight:bold;
-        text-align:left;
-    }
-    td:last-child{border-bottom:none;}
-
-    /* Keep buttons in one row even on mobile */
-    .button-row{
-        flex-direction:row;
-    }
+    .container{ padding:15px; }
+    h2,h3{ font-size:18px; }
+    
+    /* Table responsive */
+    table{ min-width:400px; }
+    th,td{ font-size:14px; padding:8px; }
+    
+    /* Buttons stacked nicely with gap */
+    .button-row{ flex-direction:row; gap:10px; }
 }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🎉 Order Placed Successfully!</h2>
+    <h2>YOUR RECIPE</h2>
     <h3>Order ID: #<?= htmlspecialchars($order['id']) ?></h3>
 
     <p><strong>Name:</strong> <?= htmlspecialchars($order['name']) ?></p>
@@ -143,35 +130,37 @@ th{
     <p><strong>Payment:</strong> <?= htmlspecialchars($order['payment_method']) ?></p>
     <p><strong>Location:</strong> <?= htmlspecialchars($order['location']) ?></p>
 
-    <table>
-        <thead>
-        <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Subtotal</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php 
-        $total = 0;
-        foreach($items as $row):
-            $subtotal = $row['price'] * $row['qty'];
-            $total += $subtotal;
-        ?>
-        <tr>
-            <td data-label="Product"><?= htmlspecialchars($row['product_name']) ?></td>
-            <td data-label="Price">$<?= number_format($row['price'],2) ?></td>
-            <td data-label="Qty"><?= $row['qty'] ?></td>
-            <td data-label="Subtotal">$<?= number_format($subtotal,2) ?></td>
-        </tr>
-        <?php endforeach; ?>
-        <tr>
-            <td colspan="3" class="total">Total</td>
-            <td class="total">$<?= number_format($total,2) ?></td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table>
+            <thead>
+            <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Subtotal</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php 
+            $total = 0;
+            foreach($items as $row):
+                $subtotal = $row['price'] * $row['qty'];
+                $total += $subtotal;
+            ?>
+            <tr>
+                <td><?= htmlspecialchars($row['product_name']) ?></td>
+                <td>$<?= number_format($row['price'],2) ?></td>
+                <td><?= $row['qty'] ?></td>
+                <td>$<?= number_format($subtotal,2) ?></td>
+            </tr>
+            <?php endforeach; ?>
+            <tr>
+                <td colspan="3" class="total">Total</td>
+                <td class="total">$<?= number_format($total,2) ?></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
     <div class="button-row">
         <a href="products.php" class="back-btn">← Back to Products</a>
