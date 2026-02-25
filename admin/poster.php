@@ -1,8 +1,9 @@
 <?php
 include "../config/db.php";   // PDO pgsql connection
 include "Authencation/auth.php";
+ob_start();
 
-$uploadFolder = "admin/assets/images_slide/";
+$uploadFolder = "assets/images_slide/";
 if(!is_dir($uploadFolder)){
     mkdir($uploadFolder,0755,true);
 }
