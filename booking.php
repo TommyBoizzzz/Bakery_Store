@@ -37,85 +37,150 @@ if($phone !== ''){
 ?>
 
 <style>
-body { background: #f7efe5; font-family: 'Poppins', sans-serif; }
-.track-wrapper { max-width: 900px; margin: 70px auto; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-.track-wrapper h2 { text-align: center; margin-bottom: 25px; color: #4b2e2e; }
+    /* ================= BODY & WRAPPER ================= */
+    body { 
+        background: #f7efe5; 
+        font-family: 'Poppins', sans-serif; 
+    }
 
-/* SEARCH AREA */
-.search-area { 
-    display: flex; 
-    gap: 10px; 
-    justify-content: center; 
-    margin-bottom: 20px; 
-    flex-wrap: nowrap; /* keep all in one row */
-}
+    .track-wrapper { 
+        max-width: 900px; 
+        margin: 70px auto; 
+        background: white; 
+        padding: 40px; 
+        border-radius: 16px; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+    }
 
-.search-area input, 
-.search-area button, 
-.search-area .history-btn { 
-    height: 45px;        /* uniform height */
-    font-size: 14px;
-    border-radius: 8px;
-    text-align: center;
-    box-sizing: border-box;
-}
+    .track-wrapper h2 { 
+        text-align: center; 
+        margin-bottom: 25px; 
+        color: #4b2e2e; 
+    }
 
-.search-area input { 
-    flex: 2;              /* input takes 2 parts */
-    border: 1px solid #ccc;
-    padding: 0 10px;
-}
+    /* ================= SEARCH AREA ================= */
+    .search-area { 
+        display: flex; 
+        gap: 10px; 
+        justify-content: center; 
+        margin-bottom: 20px; 
+        flex-wrap: nowrap; 
+    }
 
-.search-area button, 
-.search-area .history-btn { 
-    flex: 1;              /* buttons same width */
-    border: none;
-}
+    .search-area input, 
+    .search-area button, 
+    .search-area .history-btn { 
+        height: 45px;
+        font-size: 14px;
+        border-radius: 8px;
+        text-align: center;
+        box-sizing: border-box;
+    }
 
-.search-area button { 
-    background: #4b2e2e; 
-    color: #fff; 
-    font-weight: 600; 
-    cursor: pointer;
-}
-.search-area button:hover { opacity: 0.85; }
+    .search-area input { 
+        flex: 2;              
+        border: 1px solid #ccc;
+        padding: 0 10px;
+    }
 
-.history-btn { 
-    display: inline-block;
-    background: gray; 
-    color: white; 
-    text-decoration: none; 
-    font-weight: 500; 
-    line-height: 45px;
-    text-align: center;
-}
-.history-btn:hover { opacity: 0.85; }
+    .search-area button, 
+    .search-area .history-btn { 
+        flex: 1;              
+        border: none;
+    }
 
-/* BOOKING CARD */
-.booking-card { background: #fdf8f4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 6px solid #4b2e2e; }
-.booking-card h4 { margin: 0 0 10px 0; display: flex; justify-content: space-between; cursor: pointer; }
-.booking-card p { margin: 4px 0; }
-.status { font-weight: bold; }
-.no-result { text-align: center; color: red; margin-top: 20px; }
+    .search-area button { 
+        background: #4b2e2e; 
+        color: #fff; 
+        font-weight: 600; 
+        cursor: pointer;
+    }
 
-/* ORDER ITEMS */
-.order-items { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
-.order-items table { width: 100%; border-collapse: collapse; }
-.order-items th, .order-items td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
-.toggle-btn { font-size: 14px; color: #4b2e2e; font-weight: 500; }
+    .search-area button:hover { opacity: 0.85; }
 
-/* RESPONSIVE */
-@media screen and (max-width: 450px) {
-    .track-wrapper { padding: 20px; margin: 20px 10px; }
-    .search-area { flex-direction: column; gap: 10px; }
-    .search-area input, .search-area button, .search-area { width: 100%; padding: 10px; }
-    .history-btn { width: 100%;}
-    .booking-card { padding: 15px; border-left-width: 4px; }
-    .booking-card h4 { font-size: 16px; flex-direction: column; gap: 5px; }
-    .booking-card p { font-size: 14px; }
-    .order-items table, .order-items th, .order-items td { font-size: 12px; display: block; overflow-x: auto; width: 100%; white-space: nowrap; }
-    .toggle-btn { font-size: 13px; }
-}
+    .history-btn { 
+        display: inline-block;
+        background: gray; 
+        color: white; 
+        text-decoration: none; 
+        font-weight: 500; 
+        line-height: 45px;
+        text-align: center;
+    }
+
+    .history-btn:hover { opacity: 0.85; }
+
+    /* ================= BOOKING CARD ================= */
+    .booking-card { 
+        background: #fdf8f4; 
+        padding: 20px; 
+        border-radius: 12px; 
+        margin-bottom: 20px; 
+        border-left: 6px solid #4b2e2e; 
+    }
+
+    .booking-card h4 { 
+        margin: 0 0 10px 0; 
+        display: flex; 
+        justify-content: space-between; 
+        cursor: pointer; 
+    }
+
+    .booking-card p { margin: 4px 0; }
+
+    .status { font-weight: bold; }
+
+    .no-result { text-align: center; color: red; margin-top: 20px; }
+
+    /* ================= ORDER ITEMS ================= */
+    .order-items { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+
+    /* Scrollable table wrapper */
+    .table-responsive {
+        overflow-x: auto; 
+        -webkit-overflow-scrolling: touch; /* smooth scroll on mobile */
+    }
+
+    .table-responsive table {
+        width: 100%;
+        min-width: 600px; /* ensures table columns don’t shrink too much */
+        border-collapse: collapse;
+    }
+
+    .table-responsive th, 
+    .table-responsive td {
+        text-align: left;
+        padding: 8px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .toggle-btn { 
+        font-size: 14px; 
+        color: #4b2e2e; 
+        font-weight: 500; 
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media screen and (max-width: 430px) {
+        .track-wrapper { 
+            padding: 20px; 
+            margin: 20px 10px; 
+        }
+        .search-area { 
+            flex-direction: column; 
+            gap: 10px; 
+        }
+        .search-area input, .search-area button, .search-area { 
+            width: 100%; 
+            padding: 10px; 
+        }
+        .history-btn { width: 100%; }
+        .booking-card { padding: 15px; border-left-width: 4px; }
+        .booking-card h4 { font-size: 16px; flex-direction: column; gap: 5px; }
+        .booking-card p { font-size: 14px; }
+        .toggle-btn { font-size: 13px; }
+        .table-responsive table { min-width: 500px; } /* smaller min width for small screens */
+    }
 </style>
 
 <div class="track-wrapper">
@@ -153,26 +218,28 @@ body { background: #f7efe5; font-family: 'Poppins', sans-serif; }
 
                     <?php if(!empty($order['items'])): ?>
                         <div class="order-items" id="items-<?= $order['id'] ?>">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Product</th>
-                                        <th>Qty</th>
-                                        <th>Price</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach($order['items'] as $item): ?>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
                                         <tr>
-                                            <td><?= htmlspecialchars($item['product_name']) ?></td>
-                                            <td><?= intval($item['qty']) ?></td>
-                                            <td>$<?= number_format($item['price'],2) ?></td>
-                                            <td>$<?= number_format($item['price'] * $item['qty'],2) ?></td>
+                                            <th>Product</th>
+                                            <th>Qty</th>
+                                            <th>Price</th>
+                                            <th>Subtotal</th>
                                         </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach($order['items'] as $item): ?>
+                                            <tr>
+                                                <td><?= htmlspecialchars($item['product_name']) ?></td>
+                                                <td><?= intval($item['qty']) ?></td>
+                                                <td>$<?= number_format($item['price'],2) ?></td>
+                                                <td>$<?= number_format($item['price'] * $item['qty'],2) ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>

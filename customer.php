@@ -136,17 +136,50 @@ if(isset($_POST['place_order'])){
 }
 ?>
 
-<!-- ==================== CUSTOMER FORM ==================== -->
 <style>
-body{background:#f7efe5; font-family:'Poppins',sans-serif;}
-.cart-container{max-width:700px; margin:30px auto; padding:20px; background:white; border-radius:12px; box-shadow:0 0 15px rgba(0,0,0,0.1);}
-.cart-container h2{text-align:center; color:#4b2e2e;}
-.form-group{margin-bottom:15px;}
-.form-group label{display:block; margin-bottom:6px; font-weight:bold;}
-.form-group input, .form-group select{width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;}
-#map{height:300px; margin-top:10px; border-radius:12px;}
-.btn-checkout{background:#4b2e2e; border:none; padding:12px 25px; border-radius:20px; color:white; cursor:pointer; width:100%; font-weight:600; margin-top:10px;}
-.btn-checkout:hover{opacity:0.85;}
+    body{
+        background:#f7efe5; 
+        font-family:'Poppins',sans-serif;
+    }
+    .cart-container{
+        max-width:700px; margin:30px auto; 
+        padding:20px; background:white; 
+        border-radius:12px; 
+        box-shadow:0 0 15px rgba(0,0,0,0.1);
+    }
+    .cart-container h2{
+        text-align:center; 
+        color:#4b2e2e;
+    }
+    .form-group{
+        margin-bottom:15px;
+    }
+    .form-group label{
+        display:block; 
+        margin-bottom:6px; 
+        font-weight:bold;
+    }
+    .form-group input, .form-group select{
+        width:100%; 
+        padding:10px; 
+        border-radius:6px; 
+        border:1px solid #ccc;
+    }
+    #map{
+        height:300px; 
+        margin-top:10px; 
+        border-radius:12px;
+    }
+    .btn-checkout{
+        background:#4b2e2e; 
+        border:none; 
+        padding:12px 25px; 
+        border-radius:20px; 
+        color:white; cursor:pointer; 
+        width:100%; font-weight:600; 
+        margin-top:10px;
+    }
+    .btn-checkout:hover{opacity:0.85;}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
@@ -160,16 +193,26 @@ body{background:#f7efe5; font-family:'Poppins',sans-serif;}
     <div class="form-group">
         <label>Name</label>
         <input type="text" 
-               name="name" 
-               id="nameInput"
-               value="Guest"
-               placeholder="Enter your name"
-               onclick="clearGuest()">
+            name="name" 
+            id="nameInput"
+            value="Guest"
+            placeholder="Enter your name"
+            onclick="clearGuest()"
+        >
     </div>
 
     <div class="form-group">
         <label>Phone Number (Telegram)</label>
-        <input type="text" name="phone" placeholder="Enter your phone for Telegram" required>
+        <input 
+            type="text" 
+            name="phone" 
+            placeholder="Enter your phone for Telegram" 
+            pattern="\d{8,}" 
+            title="Please enter at least 8 digits" 
+            maxlength="15" 
+            inputmode="numeric"
+            required
+        >
     </div>
 
     <div class="form-group">
