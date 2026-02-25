@@ -2,56 +2,72 @@
 include "../config/db.php";   // PDO pgsql connection
 include "Authencation/auth.php";
 
-$uploadFolder = "assets/images_slide/";
-if(!is_dir($uploadFolder)){
-    mkdir($uploadFolder,0755,true);
+// ===================== UPLOAD FOLDER =====================
+// Use Render Persistent Disk
+$uploadFolder = "/mnt/data/images_slide/";
+
+// Create folder if it doesn't exist
+if (!is_dir($uploadFolder)) {
+    mkdir($uploadFolder, 0755, true);
 }
 
 /* ================= ADD SLIDE ================= */
-if(isset($_POST['add'])){
-    if(!empty($_FILES['image']['name'])){
+if (isset($_POST['add'])) {
+    if (!empty($_FILES['image']['name'])) {
 
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $allowed = ['jpg','jpeg','png','webp'];
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
-        if(in_array(strtolower($ext), $allowed)){
+        if (in_array(strtolower($ext), $allowed)) {
 
             $image = time() . "_" . uniqid() . "." . $ext;
-            move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
 
-            $stmt = $conn->prepare("INSERT INTO images_slide (image) VALUES (:image)");
-            $stmt->execute(['image'=>$image]);
+            // Move uploaded file to persistent folder
+            if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder . $image)) {
+                $stmt = $conn->prepare("INSERT INTO images_slide (image) VALUES (:image)");
+                $stmt->execute(['image' => $image]);
+            } else {
+                echo "Error: Failed to move uploaded file.";
+            }
+        } else {
+            echo "Error: Invalid file type.";
         }
+    } else {
+        echo "Error: No file uploaded.";
     }
+
     header("Location: Poster.php");
     exit();
 }
 
 /* ================= UPDATE SLIDE ================= */
-if(isset($_POST['update'])){
+if (isset($_POST['update'])) {
     $id = intval($_POST['id']);
 
-    if(!empty($_FILES['image']['name'])){
+    if (!empty($_FILES['image']['name'])) {
 
+        // Get old image
         $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
-        $stmt->execute(['id'=>$id]);
+        $stmt->execute(['id' => $id]);
         $old = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($old && !empty($old['image'])){
-            $oldPath = $uploadFolder.$old['image'];
-            if(file_exists($oldPath)) unlink($oldPath);
+        if ($old && !empty($old['image'])) {
+            $oldPath = $uploadFolder . $old['image'];
+            if (file_exists($oldPath)) unlink($oldPath);
         }
 
         $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
         $image = time() . "_" . uniqid() . "." . $ext;
 
-        move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
-
-        $stmt = $conn->prepare("UPDATE images_slide SET image=:image WHERE id=:id");
-        $stmt->execute([
-            'image'=>$image,
-            'id'=>$id
-        ]);
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder . $image)) {
+            $stmt = $conn->prepare("UPDATE images_slide SET image=:image WHERE id=:id");
+            $stmt->execute([
+                'image' => $image,
+                'id' => $id
+            ]);
+        } else {
+            echo "Error: Failed to move uploaded file.";
+        }
     }
 
     header("Location: Poster.php");
@@ -59,20 +75,20 @@ if(isset($_POST['update'])){
 }
 
 /* ================= DELETE SLIDE ================= */
-if(isset($_GET['delete'])){
+if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
 
     $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
-    $stmt->execute(['id'=>$id]);
+    $stmt->execute(['id' => $id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($row && !empty($row['image'])){
-        $imgPath = $uploadFolder.$row['image'];
-        if(file_exists($imgPath)) unlink($imgPath);
+    if ($row && !empty($row['image'])) {
+        $imgPath = $uploadFolder . $row['image'];
+        if (file_exists($imgPath)) unlink($imgPath);
     }
 
     $stmt = $conn->prepare("DELETE FROM images_slide WHERE id=:id");
-    $stmt->execute(['id'=>$id]);
+    $stmt->execute(['id' => $id]);
 
     header("Location: Poster.php");
     exit();

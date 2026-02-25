@@ -13,11 +13,6 @@ $order_id = intval($_GET['id']);
 
 // ================= HANDLE PAYMENT CONFIRM =================
 if(isset($_POST['confirm_payment'])){
-
-    // Update order status to 'Waiting Verification'
-    $stmt = $conn->prepare("UPDATE orders SET status = 'Waiting Verification' WHERE id = :id");
-    $stmt->execute([':id' => $order_id]);
-
     // Redirect to recipe page after confirming payment
     header("Location: recipe.php?id=".$order_id);
     exit;
