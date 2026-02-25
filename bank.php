@@ -2,6 +2,7 @@
 ob_start();
 session_start();
 require 'config/db.php'; // PDO PostgreSQL connection
+include 'includes/header.php';
 
 // ================= CHECK ORDER ID =================
 if(!isset($_GET['id'])){
@@ -74,22 +75,7 @@ body{font-family:'Poppins',sans-serif;background:#f7efe5;overflow-y:scroll;}
 </head>
 <body>
 
-<header class="site-header">
-    <div class="header-content">
-        <img src="assets/images_app/Logo.png" alt="BaBBoB Bakery Logo" class="logo">
-        <div>
-            <h1>BaBBoB Bakery</h1>
-            <p>Fresh cakes & bakery every day</p>
-        </div>
-    </div>
-</header>
 
-<nav class="top-nav">
-    <a href="index.php" class="nav-link <?php if($current_page=='index.php') echo 'active'; ?>">Home</a>
-    <a href="products.php" class="nav-link <?php if($current_page=='products.php') echo 'active'; ?>">Products</a>
-    <a href="cart.php" class="nav-link <?php if($current_page=='cart.php') echo 'active'; ?>">View Cart</a>
-    <a href="booking.php" class="nav-link <?php if($current_page=='booking.php') echo 'active'; ?>">My Booking</a>
-</nav>
 
 <div class="bank-container">
     <h2>🏦 KHQR Payment</h2>
@@ -127,3 +113,4 @@ body{font-family:'Poppins',sans-serif;background:#f7efe5;overflow-y:scroll;}
 
 </body>
 </html>
+<?php include 'includes/footer.php'; ?>
