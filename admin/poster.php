@@ -24,7 +24,7 @@ if(isset($_POST['add'])){
             $stmt->execute(['image'=>$image]);
         }
     }
-    header("Location: Poster.php");
+    header("Location: poster.php");
     exit();
 }
 
@@ -55,7 +55,7 @@ if(isset($_POST['update'])){
         ]);
     }
 
-    header("Location: Poster.php");
+    header("Location: poster.php");
     exit();
 }
 
@@ -75,7 +75,7 @@ if(isset($_GET['delete'])){
     $stmt = $conn->prepare("DELETE FROM images_slide WHERE id=:id");
     $stmt->execute(['id'=>$id]);
 
-    header("Location: Poster.php");
+    header("Location: poster.php");
     exit();
 }
 
