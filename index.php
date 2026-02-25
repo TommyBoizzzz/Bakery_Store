@@ -17,7 +17,7 @@ try {
         <?php if(!empty($slides)): ?>
             <?php foreach($slides as $slide): ?>
                 <div class="slide" style="min-width:100%; min-height:210px; position:relative;">
-                    <img src="admin/assets/images_slide/<?= htmlspecialchars($slide['image']) ?>" style="width:100%;border-radius:12px;">
+                    <img src="assets/images_slide/<?= htmlspecialchars($slide['image']) ?>" style="width:100%;border-radius:12px;">
                 </div>
             <?php endforeach; ?>
         <?php else: ?>
