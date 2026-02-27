@@ -2,6 +2,9 @@
 <?php
 include 'config/db.php'; // PDO connection
 
+// Cloudflare R2 public URL
+$r2PublicUrl = "https://pub-b0d591a0398c44d08c45a13006055165.r2.dev";
+
 // Fetch all slides
 try {
     $stmt = $conn->query("SELECT * FROM images_slide ORDER BY id ASC");
@@ -16,8 +19,14 @@ try {
     <div class="slides" id="slides" style="display:flex;transition:0.5s ease;">
         <?php if(!empty($slides)): ?>
             <?php foreach($slides as $slide): ?>
+                <?php
+                    // Use full R2 URL
+                    $imgUrl = !empty($slide['image']) 
+                              ? (strpos($slide['image'], 'http') === 0 ? $slide['image'] : $r2PublicUrl . '/' . $slide['image'])
+                              : 'assets/images_slide/default.jpg';
+                ?>
                 <div class="slide" style="min-width:100%; min-height:210px; position:relative;">
-                    <img src="assets/images_slide/<?= htmlspecialchars($slide['image']) ?>" style="width:100%;border-radius:12px;">
+                    <img src="<?= htmlspecialchars($imgUrl) ?>" style="width:100%;border-radius:12px;">
                 </div>
             <?php endforeach; ?>
         <?php else: ?>

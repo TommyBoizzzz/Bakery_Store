@@ -1,5 +1,11 @@
 {
     "require": {
-        "vlucas/phpdotenv": "^5.5"
+        "vlucas/phpdotenv": "^5.5",
+        "aws/aws-sdk-php": "3.282"
+    },
+    "config": {
+        "audit": {
+            "block-insecure": false
+        }
     }
 }

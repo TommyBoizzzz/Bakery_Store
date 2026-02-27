@@ -1,80 +1,118 @@
 <?php
 include "../config/db.php";   // PDO pgsql connection
 include "Authencation/auth.php";
+require "../vendor/autoload.php"; // AWS SDK for R2
 ob_start();
 
-$uploadFolder = "../assets/images_slide/";
-if(!is_dir($uploadFolder)){
-    mkdir($uploadFolder,0755,true);
-}
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
 
-/* ================= ADD SLIDE ================= */
-if(isset($_POST['add'])){
-    if(!empty($_FILES['image']['name'])){
+/* ================= R2 CONFIG ================= */
+$accountId = "df47f2fe12698df10266daa2319178dd";
+$accessKey = "e74d4d6993ca1199879f5789dc0569d2";
+$secretKey = "a472345928d31e1017c3feba96a8897e302e7bae342e6572666093f78c8e01dd";
+$bucket = "products-images";
+$endpoint = "https://$accountId.r2.cloudflarestorage.com";
+$r2PublicUrl = "https://pub-b0d591a0398c44d08c45a13006055165.r2.dev";
 
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $allowed = ['jpg','jpeg','png','webp'];
+/* ================= AWS S3 CLIENT ================= */
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'auto',
+    'endpoint' => $endpoint,
+    'use_path_style_endpoint' => true,
+    'credentials' => [
+        'key'    => $accessKey,
+        'secret' => $secretKey,
+    ],
+]);
 
-        if(in_array(strtolower($ext), $allowed)){
+/* ================= UPLOAD FUNCTION ================= */
+function uploadToR2($fileTmpPath, $fileName) {
+    global $s3, $bucket, $r2PublicUrl;
 
-            $image = time() . "_" . uniqid() . "." . $ext;
-            move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
-
-            $stmt = $conn->prepare("INSERT INTO images_slide (image) VALUES (:image)");
-            $stmt->execute(['image'=>$image]);
-        }
-    }
-    header("Location: poster.php");
-    exit();
-}
-
-/* ================= UPDATE SLIDE ================= */
-if(isset($_POST['update'])){
-    $id = intval($_POST['id']);
-
-    if(!empty($_FILES['image']['name'])){
-
-        $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
-        $stmt->execute(['id'=>$id]);
-        $old = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if($old && !empty($old['image'])){
-            $oldPath = $uploadFolder.$old['image'];
-            if(file_exists($oldPath)) unlink($oldPath);
-        }
-
-        $ext = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-        $image = time() . "_" . uniqid() . "." . $ext;
-
-        move_uploaded_file($_FILES['image']['tmp_name'], $uploadFolder.$image);
-
-        $stmt = $conn->prepare("UPDATE images_slide SET image=:image WHERE id=:id");
-        $stmt->execute([
-            'image'=>$image,
-            'id'=>$id
+    $key = "slides/" . $fileName;
+    try {
+        $s3->putObject([
+            'Bucket' => $bucket,
+            'Key' => $key,
+            'SourceFile' => $fileTmpPath,
+            'ACL' => 'public-read',
+            'ContentType' => mime_content_type($fileTmpPath),
         ]);
+        return $r2PublicUrl . "/" . $key;
+    } catch (AwsException $e) {
+        error_log("R2 Upload Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id = !empty($_POST['id']) ? intval($_POST['id']) : null;
+
+    if (!empty($_FILES['image']['name'])) {
+        $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
+
+        if (in_array($ext, $allowed)) {
+            $imageName = time() . "_" . uniqid() . "." . $ext;
+            $publicUrl = uploadToR2($_FILES['image']['tmp_name'], $imageName);
+
+            if ($publicUrl) {
+                if ($id) {
+                    // Fetch old image URL
+                    $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
+                    $stmt->execute(['id' => $id]);
+                    $oldImage = $stmt->fetchColumn();
+
+                    // Delete old image from R2
+                    if ($oldImage) {
+                        deleteFromR2($oldImage);
+                    }
+
+                    // Update with new image
+                    $stmt = $conn->prepare("UPDATE images_slide SET image=:image WHERE id=:id");
+                    $stmt->execute(['image' => $publicUrl, 'id' => $id]);
+                } else {
+                    // Insert new image
+                    $stmt = $conn->prepare("INSERT INTO images_slide (image) VALUES (:image)");
+                    $stmt->execute(['image' => $publicUrl]);
+                }
+            } else {
+                die("Failed to upload to R2");
+            }
+        } else {
+            die("Invalid file type. Allowed: jpg, jpeg, png, webp");
+        }
     }
 
     header("Location: poster.php");
     exit();
+}
+
+/* ================= DELETE FROM R2 FUNCTION ================= */
+function deleteFromR2($fileUrl) {
+    global $s3, $bucket;
+
+    // Extract key from URL
+    $parsed = parse_url($fileUrl);
+    $key = ltrim($parsed['path'], '/'); // removes leading '/'
+
+    try {
+        $s3->deleteObject([
+            'Bucket' => $bucket,
+            'Key'    => $key
+        ]);
+    } catch (AwsException $e) {
+        error_log("R2 Delete Error: " . $e->getMessage());
+    }
 }
 
 /* ================= DELETE SLIDE ================= */
-if(isset($_GET['delete'])){
+if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-
-    $stmt = $conn->prepare("SELECT image FROM images_slide WHERE id=:id");
-    $stmt->execute(['id'=>$id]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if($row && !empty($row['image'])){
-        $imgPath = $uploadFolder.$row['image'];
-        if(file_exists($imgPath)) unlink($imgPath);
-    }
-
     $stmt = $conn->prepare("DELETE FROM images_slide WHERE id=:id");
-    $stmt->execute(['id'=>$id]);
-
+    $stmt->execute(['id' => $id]);
     header("Location: poster.php");
     exit();
 }
@@ -90,30 +128,12 @@ $slides = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Poster Management</title>
-
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
 *{box-sizing:border-box;}
 body{margin:0;font-family:'Poppins',sans-serif;background:#f7efe5;}
-header{
-    background:linear-gradient(135deg,#4b2e2e,#c19a6b);
-    color:#fff;
-    padding:20px 40px;
-    font-size:24px;
-    font-weight:600;
-    display:flex;
-    align-items:center;
-    gap:15px;
-    border-bottom:4px solid #c19a6b;
-}
-.back-btn{
-    background:#4b2e2e;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    padding:8px 14px;
-    cursor:pointer;
-}
+header{background:linear-gradient(135deg,#4b2e2e,#c19a6b);color:#fff;padding:20px 40px;font-size:24px;font-weight:600;display:flex;align-items:center;gap:15px;border-bottom:4px solid #c19a6b;}
+.back-btn{background:#4b2e2e;color:#fff;border:none;border-radius:8px;padding:8px 14px;cursor:pointer;}
 .container{max-width:1200px;margin:20px auto;padding:0 20px;}
 .top-bar{display:flex;gap:10px;margin-bottom:20px;}
 .search-box{flex:75%;}
@@ -161,7 +181,7 @@ POSTER MANAGEMENT
 <td><?= $i++ ?></td>
 <td>
 <?php if(!empty($row['image'])): ?>
-<img src="<?= htmlspecialchars($uploadFolder.$row['image']) ?>" alt="">
+<img src="<?= htmlspecialchars($row['image']) ?>" alt="Poster Image">
 <?php endif; ?>
 </td>
 <td>

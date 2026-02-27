@@ -72,11 +72,15 @@ body{ overflow-y:scroll; }
 <div class="product"
      data-name="<?= strtolower(htmlspecialchars($row['name'])) ?>"
      data-category="<?= htmlspecialchars($row['category_name']) ?>">
-    
+
     <!-- Clickable Image -->
-    <a href="assets/images/<?= htmlspecialchars($row['image']) ?>" target="_blank">
-        <img src="assets/images/<?= htmlspecialchars($row['image']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
+    <?php if(!empty($row['image'])): ?>
+    <a href="<?= htmlspecialchars($row['image']) ?>" target="_blank">
+        <img src="<?= htmlspecialchars($row['image']) ?>" alt="<?= htmlspecialchars($row['name']) ?>">
     </a>
+    <?php else: ?>
+    <img src="assets/images/no-image.png" alt="No Image">
+    <?php endif; ?>
 
     <div class="product-body">
         <h3><?= htmlspecialchars($row['name']) ?></h3>

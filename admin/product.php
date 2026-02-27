@@ -1,38 +1,109 @@
 <?php
 include "../config/db.php";   // PDO PostgreSQL connection
 include "Authencation/auth.php";
+require "../vendor/autoload.php";
 
-$uploadDir = "../assets/images/";
-if(!is_dir($uploadDir)){
-    mkdir($uploadDir,0755,true);
+use Aws\S3\S3Client;
+use Aws\Exception\AwsException;
+
+/* ================= R2 CONFIG ================= */
+$accountId = "df47f2fe12698df10266daa2319178dd";
+$accessKey = "e74d4d6993ca1199879f5789dc0569d2";
+$secretKey = "a472345928d31e1017c3feba96a8897e302e7bae342e6572666093f78c8e01dd";
+$bucket = "products-images";
+$endpoint = "https://$accountId.r2.cloudflarestorage.com";
+$r2PublicUrl = "https://pub-b0d591a0398c44d08c45a13006055165.r2.dev";
+
+/* ================= S3 CLIENT ================= */
+$s3 = new S3Client([
+    'version' => 'latest',
+    'region'  => 'auto',
+    'endpoint' => $endpoint,
+    'use_path_style_endpoint' => true,
+    'credentials' => [
+        'key'    => $accessKey,
+        'secret' => $secretKey,
+    ],
+]);
+
+/* ================= UPLOAD FUNCTION ================= */
+function uploadToR2($fileTmpPath, $fileName) {
+    global $s3, $bucket, $r2PublicUrl;
+
+    $key = "products/" . $fileName;
+
+    try {
+        $s3->putObject([
+            'Bucket' => $bucket,
+            'Key' => $key,
+            'SourceFile' => $fileTmpPath,
+            'ACL' => 'public-read',
+            'ContentType' => mime_content_type($fileTmpPath),
+        ]);
+
+        return $r2PublicUrl . "/" . $key;
+
+    } catch (AwsException $e) {
+        error_log("R2 Upload Error: " . $e->getMessage());
+        return false;
+    }
+}
+
+/* ================= DELETE FUNCTION ================= */
+function deleteFromR2($fileUrl) {
+    global $s3, $bucket;
+
+    $parsed = parse_url($fileUrl);
+    $key = ltrim($parsed['path'], '/');
+
+    try {
+        $s3->deleteObject([
+            'Bucket' => $bucket,
+            'Key'    => $key
+        ]);
+    } catch (AwsException $e) {
+        error_log("R2 Delete Error: " . $e->getMessage());
+    }
 }
 
 /* ================= ADD PRODUCT ================= */
 if (isset($_POST['add'])) {
+
     $name = trim($_POST['name']);
     $category_id = intval($_POST['category_id']);
     $price = floatval($_POST['price']);
     $description = trim($_POST['description']);
 
     if (strlen($name) > 24) {
-        echo "<script>alert('Product name cannot exceed 24 characters');window.history.back();</script>";
-        exit();
+        die("Product name cannot exceed 24 characters.");
     }
 
     $image = "";
+
     if (!empty($_FILES['image']['name'])) {
+
         $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
         $allowed = ['jpg','jpeg','png','webp'];
-        if(in_array($ext,$allowed)){
-            $image = time()."_".uniqid().".".$ext;
-            move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir.$image);
+
+        if (!in_array($ext, $allowed)) {
+            die("Invalid file type.");
         }
+
+        $imageName = time() . "_" . uniqid() . "." . $ext;
+        $imageUrl = uploadToR2($_FILES['image']['tmp_name'], $imageName);
+
+        if (!$imageUrl) {
+            die("Upload failed.");
+        }
+
+        $image = $imageUrl;
     }
 
     $stmt = $conn->prepare("
         INSERT INTO products (name, category_id, price, description, image)
         VALUES (:name, :category_id, :price, :description, :image)
     ");
+
     $stmt->execute([
         'name'=>$name,
         'category_id'=>$category_id,
@@ -47,6 +118,7 @@ if (isset($_POST['add'])) {
 
 /* ================= UPDATE PRODUCT ================= */
 if (isset($_POST['update'])) {
+
     $id = intval($_POST['id']);
     $name = trim($_POST['name']);
     $category_id = intval($_POST['category_id']);
@@ -54,44 +126,51 @@ if (isset($_POST['update'])) {
     $description = trim($_POST['description']);
 
     if (strlen($name) > 24) {
-        echo "<script>alert('Product name cannot exceed 24 characters');window.history.back();</script>";
-        exit();
+        die("Product name cannot exceed 24 characters.");
     }
 
     if (!empty($_FILES['image']['name'])) {
+
+        // Get old image
         $stmt = $conn->prepare("SELECT image FROM products WHERE id=:id");
         $stmt->execute(['id'=>$id]);
         $old = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if($old && !empty($old['image'])){
-            $oldPath = $uploadDir.$old['image'];
-            if(file_exists($oldPath)) unlink($oldPath);
+        if ($old && !empty($old['image'])) {
+            deleteFromR2($old['image']);
         }
 
         $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
-        $image = time()."_".uniqid().".".$ext;
-        move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir.$image);
+        $imageName = time() . "_" . uniqid() . "." . $ext;
+        $imageUrl = uploadToR2($_FILES['image']['tmp_name'], $imageName);
+
+        if (!$imageUrl) {
+            die("Upload failed.");
+        }
 
         $stmt = $conn->prepare("
             UPDATE products
             SET name=:name, category_id=:category_id, price=:price, description=:description, image=:image
             WHERE id=:id
         ");
+
         $stmt->execute([
             'name'=>$name,
             'category_id'=>$category_id,
             'price'=>$price,
             'description'=>$description,
-            'image'=>$image,
+            'image'=>$imageUrl,
             'id'=>$id
         ]);
 
     } else {
+
         $stmt = $conn->prepare("
             UPDATE products
             SET name=:name, category_id=:category_id, price=:price, description=:description
             WHERE id=:id
         ");
+
         $stmt->execute([
             'name'=>$name,
             'category_id'=>$category_id,
@@ -107,15 +186,15 @@ if (isset($_POST['update'])) {
 
 /* ================= DELETE PRODUCT ================= */
 if (isset($_GET['delete'])) {
+
     $id = intval($_GET['delete']);
 
     $stmt = $conn->prepare("SELECT image FROM products WHERE id=:id");
     $stmt->execute(['id'=>$id]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($row && !empty($row['image'])){
-        $imagePath = $uploadDir.$row['image'];
-        if(file_exists($imagePath)) unlink($imagePath);
+    if ($row && !empty($row['image'])) {
+        deleteFromR2($row['image']);
     }
 
     $stmt = $conn->prepare("DELETE FROM products WHERE id=:id");
@@ -202,7 +281,7 @@ PRODUCT MANAGEMENT
 <td><?= htmlspecialchars($row['name']) ?></td>
 <td><?= htmlspecialchars($row['category']) ?></td>
 <td>$<?= number_format($row['price'],2) ?></td>
-<td><?php if(!empty($row['image'])): ?><img src="../assets/images/<?= htmlspecialchars($row['image']) ?>"><?php endif; ?></td>
+<td><?php if(!empty($row['image'])): ?><img src="<?= htmlspecialchars($row['image']) ?>"><?php endif; ?></td>
 <td>
 <a class="edit" onclick="openModal(
 <?= $row['id'] ?>,
@@ -230,7 +309,7 @@ PRODUCT MANAGEMENT
           <option value="<?= htmlspecialchars($c['id']) ?>"><?= htmlspecialchars($c['name']) ?></option>
         <?php endforeach; ?>
       </select>
-      <input type="number" name="price" id="pprice" placeholder="Price" required>
+      <input type="number" name="price" id="pprice" placeholder="Price" required step="0.01" min="0">
       <textarea name="description" id="pdesc" placeholder="Description"></textarea>
       <input type="file" name="image">
       <button type="submit" class="submit-btn" id="submitBtn" name="add">Add Product</button>

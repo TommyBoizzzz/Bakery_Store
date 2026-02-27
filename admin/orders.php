@@ -6,6 +6,7 @@ include "Authencation/auth.php";
 if(isset($_POST['update_status'])){
     $id = intval($_POST['order_id']);
     $status = $_POST['status'];
+    $current_tab = $_POST['current_tab']; // track current tab
 
     $stmt = $conn->prepare("UPDATE orders SET status = :status WHERE id = :id");
     $stmt->execute([
@@ -13,14 +14,16 @@ if(isset($_POST['update_status'])){
         'id'     => $id
     ]);
 
-    header("Location: ".$_SERVER['PHP_SELF']);
+    // Redirect back to the same tab
+    header("Location: ".$_SERVER['PHP_SELF']."?status=".urlencode($current_tab));
     exit();
 }
 
 // ==================== FILTER STATUS ====================
-$current_status = $_GET['status'] ?? 'All';
+$statuses = ['Pending','Success','Delivery','Pick Up','Done','Cancel']; // added Done
+$current_status = $_GET['status'] ?? 'Pending'; // default to Pending
 
-if($current_status != 'All'){
+if(in_array($current_status, $statuses)){
     $stmt = $conn->prepare("SELECT * FROM orders WHERE status = :status ORDER BY id DESC");
     $stmt->execute(['status' => $current_status]);
 } else {
@@ -167,11 +170,11 @@ ORDER MANAGEMENT
 
 <div class="container">
 
+<!-- STATUS TABS -->
 <div class="status-tabs">
 <?php
-$statuses = ['All','Pending','Success','Delivery','Pick Up','Cancel'];
 foreach($statuses as $status_tab):
-$active = ($status_tab == $current_status) ? 'active' : '';
+    $active = ($status_tab == $current_status) ? 'active' : '';
 ?>
 <a href="?status=<?= urlencode($status_tab) ?>" class="tab <?= $active ?>">
 <?= $status_tab ?>
@@ -179,6 +182,7 @@ $active = ($status_tab == $current_status) ? 'active' : '';
 <?php endforeach; ?>
 </div>
 
+<!-- ORDERS TABLE -->
 <div class="table-scroll">
 <table>
 <tr>
@@ -206,15 +210,46 @@ $active = ($status_tab == $current_status) ? 'active' : '';
 <td>
 <form method="post">
 <input type="hidden" name="order_id" value="<?= $row['id'] ?>">
+<input type="hidden" name="current_tab" value="<?= htmlspecialchars($current_status) ?>">
 <div class="action-row">
-<select name="status" class="status-select">
-<option value="Pending" <?= $row['status']=='Pending'?'selected':'' ?>>Pending</option>
-<option value="Success" <?= $row['status']=='Success'?'selected':'' ?>>Success</option>
-<option value="Delivery" <?= $row['status']=='Delivery'?'selected':'' ?>>Delivery</option>
-<option value="Pick Up" <?= $row['status']=='Pick Up'?'selected':'' ?>>Pick Up</option>
-<option value="Cancel" <?= $row['status']=='Cancel'?'selected':'' ?>>Cancel</option>
+
+<?php
+// Determine next status options, always include Cancel
+$next_status_options = [];
+switch($row['status']){
+    case 'Pending':
+        $next_status_options[] = 'Success';
+        break;
+    case 'Success':
+        $next_status_options[] = 'Delivery';
+        break;
+    case 'Delivery':
+        $next_status_options[] = 'Pick Up';
+        break;
+    case 'Pick Up':
+        $next_status_options[] = 'Done';
+        break;
+    case 'Done':
+        $next_status_options[] = 'Done';
+        break;
+    default:
+        $next_status_options[] = $row['status'];
+        break;
+}
+
+// Always allow Cancel for any status except Cancel itself
+if($row['status'] != 'Cancel'){
+    $next_status_options[] = 'Cancel';
+}
+?>
+
+<select name="status" class="status-select" <?= ($row['status']=='Cancel')?'disabled':'' ?>>
+<?php foreach($next_status_options as $option): ?>
+<option value="<?= $option ?>"><?= $option ?></option>
+<?php endforeach; ?>
 </select>
-<button type="submit" name="update_status" class="update-btn">Update</button>
+
+<button type="submit" name="update_status" class="update-btn" <?= ($row['status']=='Cancel')?'disabled':'' ?>>Update</button>
 </div>
 </form>
 </td>

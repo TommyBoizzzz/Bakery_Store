@@ -107,7 +107,13 @@ body{background:#f7efe5;font-family:'Poppins',sans-serif;}
             $subtotal = $item['price']*$item['qty'];
         ?>
         <tr>
-            <td><img src="assets/images/<?= htmlspecialchars($item['image']) ?>" class="cart-img"></td>
+            <td>
+                <?php if(!empty($item['image'])): ?>
+                <img src="<?= htmlspecialchars($item['image']) ?>" class="cart-img" alt="<?= htmlspecialchars($item['name']) ?>">
+                <?php else: ?>
+                <img src="assets/images/no-image.png" class="cart-img" alt="No Image">
+                <?php endif; ?>
+            </td>
             <td><?= htmlspecialchars($item['name']) ?></td>
             <td><?= number_format($item['price'],2) ?></td>
             <td><input type="number" name="qty[<?= $id ?>]" class="qty-input" value="<?= $item['qty'] ?>" min="1"></td>
