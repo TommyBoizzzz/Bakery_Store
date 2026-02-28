@@ -1,43 +1,57 @@
-<!-- FOOTER -->
+<?php
+// footer.php
+?>
 <style>
 footer {
     text-align: center;
     padding: 20px;
-    color: #4b2e2e;
-    background: #f7efe5;
+    color: #9c5f78; 
+    background: #fdf4f8; 
     font-family: 'Poppins', sans-serif;
 }
 
-footer a {
+.footer-icons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.footer-icons a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     text-decoration: none;
-    color: #4b2e2e;
+    color: #c98aa5; 
     font-weight: 600;
-    margin: 0 10px;
     transition: 0.3s;
 }
 
-footer a:hover {
-    color: #8b5e3c;
+.footer-icons a:hover {
+    color: #b76e8a; 
 }
 
 .footer-icons img {
     width: 24px;
     height: 24px;
-    vertical-align: middle;
-    margin-right: 6px;
+    filter: hue-rotate(-10deg) saturate(1.1);
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    footer {
+        padding: 25px 10px;
+    }
 }
 </style>
 
 <footer>
     © <?php echo date('Y'); ?> BaBBoB Bakery
-    <br><br>
     <div class="footer-icons">
-        <!-- Telegram link -->
         <a href="https://t.me/LUYNALIN" target="_blank">
             <img src="assets/images_app/telegram-icon.png" alt="Telegram"> Chat Owner
         </a>
-
-        <!-- Admin home link -->
         <a href="admin/Authencation/login.php" target="_blank">
             <img src="assets/images_app/admin-icon.png" alt="Admin"> Admin Home
         </a>

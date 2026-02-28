@@ -30,23 +30,26 @@ $ownerTelegram = "https://t.me/LUYNALIN"; // change to your telegram username
 <style>
 body{
     font-family:Poppins,sans-serif;
-    background:#f7efe5;
+    background:#fdf4f8; /* soft pink background */
     padding:20px;
     margin:0;
 }
+
 .container{
     max-width:800px;
     margin:auto;
     background:white;
     padding:20px;
     border-radius:12px;
-    box-shadow:0 0 15px rgba(0,0,0,0.1);
+    box-shadow:0 0 15px rgba(201,138,165,0.25); /* pink shadow */
 }
+
 h2,h3{
-    color:#4b2e2e;
+    color:#9c5f78; /* elegant rose text */
     text-align:center;
     margin:5px 0;
 }
+
 p{
     margin:5px 0;
 }
@@ -57,31 +60,37 @@ p{
     -webkit-overflow-scrolling: touch;
     margin-top:20px;
 }
+
 table{
     width:100%;
     border-collapse:collapse;
-    min-width:500px; /* ensures table doesn't shrink too much */
-}
-th,td{
-    padding:12px;
-    border:1px solid #c19a6b;
-    text-align:center;
-}
-th{
-    background:#4b2e2e;
-    color:white;
-}
-.total{
-    font-weight:bold;
+    min-width:500px;
 }
 
-/* Buttons container: left & right */
+th,td{
+    padding:12px;
+    border:1px solid #d8a8b8; /* pink border */
+    text-align:center;
+}
+
+th{
+    background:#c98aa5; /* main pink */
+    color:white;
+}
+
+.total{
+    font-weight:bold;
+    color:#b76e8a;
+}
+
+/* Buttons container */
 .button-row{
     display:flex;
     justify-content:space-between;
     margin-top:20px;
     gap:10px;
 }
+
 .back-btn,
 .btn-telegram{
     display:inline-block;
@@ -92,30 +101,39 @@ th{
     flex:1;
     text-align:center;
 }
+
+/* Back button = pink */
 .back-btn{
-    background:#4b2e2e;
+    background:#c98aa5;
     color:white;
 }
+
+/* Telegram button slightly darker pink (still bakery theme) */
 .btn-telegram{
-    background:#0088cc;
+    background:#b76e8a;
     color:white;
 }
+
 .back-btn:hover,
 .btn-telegram:hover{
     opacity:0.85;
 }
 
-/* ===== Responsive for screens <= 430px ===== */
+/* ===== Responsive ===== */
 @media screen and (max-width:430px){
+
     .container{ padding:15px; }
+
     h2,h3{ font-size:18px; }
-    
-    /* Table responsive */
+
     table{ min-width:400px; }
+
     th,td{ font-size:14px; padding:8px; }
-    
-    /* Buttons stacked nicely with gap */
-    .button-row{ flex-direction:row; gap:10px; }
+
+    .button-row{ 
+        flex-direction:row; 
+        gap:10px; 
+    }
 }
 </style>
 </head>

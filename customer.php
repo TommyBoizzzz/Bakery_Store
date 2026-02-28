@@ -137,49 +137,76 @@ if(isset($_POST['place_order'])){
 ?>
 
 <style>
-    body{
-        background:#f7efe5; 
-        font-family:'Poppins',sans-serif;
-    }
-    .cart-container{
-        max-width:700px; margin:30px auto; 
-        padding:20px; background:white; 
-        border-radius:12px; 
-        box-shadow:0 0 15px rgba(0,0,0,0.1);
-    }
-    .cart-container h2{
-        text-align:center; 
-        color:#4b2e2e;
-    }
-    .form-group{
-        margin-bottom:15px;
-    }
-    .form-group label{
-        display:block; 
-        margin-bottom:6px; 
-        font-weight:bold;
-    }
-    .form-group input, .form-group select{
-        width:100%; 
-        padding:10px; 
-        border-radius:6px; 
-        border:1px solid #ccc;
-    }
-    #map{
-        height:300px; 
-        margin-top:10px; 
-        border-radius:12px;
-    }
-    .btn-checkout{
-        background:#4b2e2e; 
-        border:none; 
-        padding:12px 25px; 
-        border-radius:20px; 
-        color:white; cursor:pointer; 
-        width:100%; font-weight:600; 
-        margin-top:10px;
-    }
-    .btn-checkout:hover{opacity:0.85;}
+body{
+    background:#fdf4f8; 
+    font-family:'Poppins',sans-serif;
+}
+
+.cart-container{
+    max-width:700px;
+    margin:30px auto;
+    padding:20px;
+    background:white;
+    border-radius:12px;
+    box-shadow:0 0 15px rgba(201,138,165,0.25); /* pink shadow */
+}
+
+.cart-container h2{
+    text-align:center;
+    color:#9c5f78; /* elegant rose */
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+.form-group label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+    color:#c98aa5;
+}
+
+.form-group input,
+.form-group select{
+    width:100%;
+    padding:10px;
+    border-radius:6px;
+    border:1px solid #d8a8b8;
+    outline:none;
+    transition:0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus{
+    border-color:#c98aa5;
+    box-shadow:0 0 6px rgba(201,138,165,0.4);
+}
+
+#map{
+    height:300px;
+    margin-top:10px;
+    border-radius:12px;
+    border:2px solid #f3c6d3;
+}
+
+/* Checkout Button */
+.btn-checkout{
+    background:#c98aa5;
+    border:none;
+    padding:12px 25px;
+    border-radius:20px;
+    color:white;
+    cursor:pointer;
+    width:100%;
+    font-weight:600;
+    margin-top:10px;
+    transition:0.3s;
+}
+
+.btn-checkout:hover{
+    background:#b76e8a;
+}
 </style>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />

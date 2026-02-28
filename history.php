@@ -39,50 +39,186 @@ if($phone !== ''){
 ?>
 
 <style>
-body { background: #f7efe5; font-family: 'Poppins', sans-serif; }
-.track-wrapper { max-width: 900px; margin: 70px auto; background: #fff; padding: 40px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); }
-.header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
-.header-row h2 { margin: 0; color: #4b2e2e; }
-.back-btn { padding: 10px 20px; background: #4b2e2e; color: white; border-radius: 8px; text-decoration: none; font-weight: 500; }
-.back-btn:hover { opacity: 0.85; }
+body {
+    background: #fdf4f8; /* soft blush background */
+    font-family: 'Poppins', sans-serif;
+}
 
-/* Booking card and status colors */
-.booking-card { background: #fdf8f4; padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 6px solid gray; display: none; }
-.booking-card.pending { border-left-color: #FFA500; }    /* orange */
-.booking-card.success { border-left-color: #28a745; }    /* green */
-.booking-card.delivery { border-left-color: #007bff; }   /* blue */
-.booking-card.done { border-left-color: #6f42c1; }       /* purple */
-.booking-card.cancel { border-left-color: #dc3545; }     /* red */
+.track-wrapper {
+    max-width: 900px;
+    margin: 70px auto;
+    background: #fff;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(201,138,165,0.25); /* pink shadow */
+}
 
-.booking-card h4 { margin: 0 0 10px 0; display: flex; justify-content: space-between; cursor: pointer; }
-.booking-card p { margin: 4px 0; }
-.booking-card .status.pending { color: #FFA500; }
-.booking-card .status.success { color: #28a745; }
-.booking-card .status.delivery { color: #007bff; }
-.booking-card .status.done { color: #6f42c1; }
-.booking-card .status.cancel { color: #dc3545; }
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
 
-.no-result { text-align: center; color: red; margin-top: 20px; }
-.order-items { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
-.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.table-responsive table { width: 100%; min-width: 600px; border-collapse: collapse; }
-.table-responsive th, .table-responsive td { text-align: left; padding: 8px; border-bottom: 1px solid #ddd; }
-.toggle-btn { font-size: 14px; color: #4b2e2e; font-weight: 500; }
+.header-row h2 {
+    margin: 0;
+    color: #9c5f78; /* elegant rose */
+}
+
+.back-btn {
+    padding: 10px 20px;
+    background: #c98aa5;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-btn:hover {
+    background: #b76e8a;
+}
+
+/* Booking card */
+.booking-card {
+    background: #fff0f5; /* light pink card */
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 6px solid #d8a8b8;
+    display: none;
+}
+
+/* Status border colors (kept clear for meaning) */
+.booking-card.pending { border-left-color: #f4a261; }
+.booking-card.success { border-left-color: #e76f51; }
+.booking-card.delivery { border-left-color: #ff8fab; }
+.booking-card.done { border-left-color: #b76e8a; }
+.booking-card.cancel { border-left-color: #d00000; }
+
+.booking-card h4 {
+    margin: 0 0 10px 0;
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    color: #9c5f78;
+}
+
+.booking-card p {
+    margin: 4px 0;
+}
+
+/* Status text colors */
+.booking-card .status.pending { color: #f4a261; }
+.booking-card .status.success { color: #e76f51; }
+.booking-card .status.delivery { color: #ff8fab; }
+.booking-card .status.done { color: #b76e8a; }
+.booking-card .status.cancel { color: #d00000; }
+
+.no-result {
+    text-align: center;
+    color: #b76e8a;
+    margin-top: 20px;
+}
+
+.order-items {
+    display: none;
+    margin-top: 10px;
+    border-top: 1px solid #f3c6d3;
+    padding-top: 10px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+}
+
+.table-responsive th,
+.table-responsive td {
+    text-align: left;
+    padding: 8px;
+    border-bottom: 1px solid #f3c6d3;
+}
+
+.toggle-btn {
+    font-size: 14px;
+    color: #c98aa5;
+    font-weight: 500;
+}
 
 /* Pagination */
-.pagination { text-align: right; margin-top: 20px; }
-.pagination button { margin-left: 5px; padding: 6px 12px; border: none; border-radius: 5px; background: #4b2e2e; color: #fff; cursor: pointer; font-size: 16px; }
-.pagination button:disabled { opacity: 0.5; cursor: default; }
+.pagination {
+    text-align: right;
+    margin-top: 20px;
+}
 
+.pagination button {
+    margin-left: 5px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    background: #c98aa5;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.pagination button:hover {
+    background: #b76e8a;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Mobile */
 @media screen and (max-width: 450px){
-    .track-wrapper { padding: 20px; margin: 20px 10px; }
-    .header-row { flex-direction: column; gap: 10px; align-items: flex-start; }
-    .back-btn { width: 100%; text-align: center; }
-    .booking-card { padding: 15px; border-left-width: 4px; }
-    .booking-card h4 { font-size: 16px; flex-direction: column; gap: 5px; }
-    .booking-card p { font-size: 14px; }
-    .toggle-btn { font-size: 13px; }
-    .table-responsive table { min-width: 500px; }
+
+    .track-wrapper {
+        padding: 20px;
+        margin: 20px 10px;
+    }
+
+    .header-row {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .back-btn {
+        width: 100%;
+        text-align: center;
+    }
+
+    .booking-card {
+        padding: 15px;
+        border-left-width: 4px;
+    }
+
+    .booking-card h4 {
+        font-size: 16px;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .booking-card p {
+        font-size: 14px;
+    }
+
+    .toggle-btn {
+        font-size: 13px;
+    }
+
+    .table-responsive table {
+        min-width: 500px;
+    }
 }
 </style>
 
@@ -190,4 +326,4 @@ function toggleItems(orderId){
 }
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include 'includes/footer.php'; ?> 
