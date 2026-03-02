@@ -66,7 +66,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         font-size: 32px;
         font-weight: 700;
         letter-spacing: 1px;
-        color: #fff;
+        color: #ffffff;
         text-shadow: 1px 1px 4px rgba(0,0,0,0.2);
     }
 

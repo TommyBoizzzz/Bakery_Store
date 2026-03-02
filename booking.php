@@ -74,7 +74,9 @@ body {
     flex-wrap: wrap;
 }
 
-.search-area input, .search-area button, .search-area .history-btn {
+.search-area input,
+.search-area button,
+.history-btn {
     height: 45px;
     font-size: 14px;
     border-radius: 8px;
@@ -88,12 +90,9 @@ body {
     padding: 0 10px;
 }
 
-.search-area button, .search-area .history-btn {
+.search-area button {
     flex: 1;
     border: none;
-}
-
-.search-area button {
     background: #9C5F78;
     color: #fff;
     font-weight: 600;
@@ -105,20 +104,24 @@ body {
 }
 
 .history-btn {
-    display: inline-block;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #D8A8B8;
     color: white;
     font-weight: 500;
-    line-height: 45px;
-    text-align: center;
     text-decoration: none;
+    border-radius: 8px;
 }
 
-.history-btn:hover {
-    opacity: 0.85;
+.history-btn.disabled {
+    background: #e0c4cf;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
-/* Booking card styling */
+/* Booking card */
 .booking-card {
     background: #fff0f5;
     padding: 20px;
@@ -126,51 +129,24 @@ body {
     margin-bottom: 20px;
     border-left: 6px solid #9C5F78;
     box-shadow: 0 4px 10px rgba(201,138,165,0.2);
-    display: none; /* hidden initially */
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.booking-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(201,138,165,0.3);
+    display: none;
 }
 
 .booking-card h4 {
-    margin: 0 0 10px 0;
+    margin-bottom: 10px;
     display: flex;
     justify-content: space-between;
     cursor: pointer;
-    font-weight: 600;
     color: #9C5F78;
 }
-
-.booking-card p {
-    margin: 4px 0;
-}
-
-/* Status colors */
-.booking-card.pending { border-left-color: #FFA500; }
-.booking-card.success { border-left-color: #28a745; }
-.booking-card.delivery { border-left-color: #007bff; }
-.booking-card.pickup { border-left-color: #6f42c1; }
-.booking-card.cancel { border-left-color: #dc3545; }
-
-.booking-card .status.pending { color: #FFA500; }
-.booking-card .status.success { color: #28a745; }
-.booking-card .status.delivery { color: #007bff; }
-.booking-card .status.pickup { color: #6f42c1; }
-.booking-card .status.cancel { color: #dc3545; }
 
 .order-items {
     display: none;
     margin-top: 10px;
-    border-top: 1px solid #F3C6D3;
-    padding-top: 10px;
 }
 
 .table-responsive {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 .table-responsive table {
@@ -179,65 +155,68 @@ body {
     border-collapse: collapse;
 }
 
-.table-responsive th {
-    background: #C98AA5;
-    color: #fff;
-    padding: 10px;
-    text-align: center;
-}
-
+.table-responsive th,
 .table-responsive td {
-    padding: 10px;
+    padding: 8px;
     text-align: center;
     border-bottom: 1px solid #F3C6D3;
 }
 
-.toggle-btn {
-    font-size: 14px;
-    color: #9C5F78;
-    font-weight: 500;
-    cursor: pointer;
-}
-
 .no-result {
     text-align: center;
-    color: #dc3545;
+    color: red;
     margin-top: 20px;
 }
 
 /* Pagination */
 .pagination {
-    text-align: right;
+    text-align: center;
     margin-top: 20px;
 }
 
 .pagination button {
-    margin-left: 5px;
     padding: 6px 12px;
     border: none;
     border-radius: 5px;
     background: #9C5F78;
-    color: #fff;
+    color: white;
     cursor: pointer;
-    font-size: 16px;
 }
 
-.pagination button:disabled {
-    opacity: 0.5;
-    cursor: default;
-}
+/* ✅ MOBILE FIX 430px */
+@media (max-width: 430px){
 
-/* Responsive */
-@media screen and (max-width: 450px){
-    .track-wrapper { padding: 20px; margin: 20px 10px; }
-    .search-area { flex-direction: column; gap: 10px; }
-    .search-area input, .search-area button, .search-area { width: 100%; }
-    .history-btn { width: 100%; }
-    .booking-card { padding: 15px; border-left-width: 4px; }
-    .booking-card h4 { font-size: 16px; flex-direction: column; gap: 5px; }
-    .booking-card p { font-size: 14px; }
-    .toggle-btn { font-size: 13px; }
-    .table-responsive table { min-width: 500px; }
+    .track-wrapper {
+        padding: 15px;
+        margin: 15px 8px;
+    }
+
+    .search-area {
+        flex-direction: column;
+    }
+
+    .search-area input,
+    .search-area button,
+    .history-btn {
+        width: 100%;
+        height: 42px;
+        font-size: 13px;
+    }
+
+    .booking-card {
+        padding: 12px;
+    }
+
+    .booking-card h4 {
+        flex-direction: column;
+        align-items: flex-start;
+        font-size: 15px;
+    }
+
+    .table-responsive table {
+        min-width: 480px;
+        font-size: 12px;
+    }
 }
 </style>
 
@@ -246,36 +225,36 @@ body {
 
     <form method="POST">
         <div class="search-area">
-            <input type="text" name="phone" placeholder="Enter Your Phone Number" value="<?= htmlspecialchars($phone) ?>" required>
+            <input type="text" name="phone" placeholder="Enter Your Phone Number"
+                   value="<?= htmlspecialchars($phone) ?>" required>
+
             <button type="submit" name="search">Search</button>
-            <a class="history-btn" href="history.php?phone=<?= urlencode($phone) ?>" <?= $phone === '' ? 'style="pointer-events:none;opacity:0.5;"' : '' ?>>View History</a>
+
+            <?php if($phone !== ''): ?>
+                <a class="history-btn" href="history.php?phone=<?= urlencode($phone) ?>">
+                    View History
+                </a>
+            <?php else: ?>
+                <span class="history-btn disabled">View History</span>
+            <?php endif; ?>
         </div>
     </form>
 
     <?php if($phone !== ''): ?>
         <?php if(empty($orders)): ?>
-            <div class="no-result">No active orders found with this phone number.</div>
+            <div class="no-result">No active orders found.</div>
         <?php else: ?>
+
             <?php foreach($orders as $order): ?>
-                <?php 
-                    $statusClass = '';
-                    $statusLower = strtolower($order['status']);
-                    if($statusLower === 'pending') $statusClass = 'pending';
-                    elseif($statusLower === 'success') $statusClass = 'success';
-                    elseif($statusLower === 'delivery') $statusClass = 'delivery';
-                    elseif($statusLower === 'pick up') $statusClass = 'pickup';
-                    elseif($statusLower === 'cancel') $statusClass = 'cancel';
-                ?>
-                <div class="booking-card <?= $statusClass ?>">
+                <div class="booking-card">
                     <h4 onclick="toggleItems(<?= $order['id'] ?>)">
                         Order #<?= $order['id'] ?>
-                        <span class="toggle-btn" id="toggle-<?= $order['id'] ?>">[Show Items]</span>
+                        <span id="toggle-<?= $order['id'] ?>">[Show Items]</span>
                     </h4>
+
                     <p><strong>Name:</strong> <?= htmlspecialchars($order['name']) ?></p>
-                    <p><strong>Phone:</strong> <?= htmlspecialchars($order['phone']) ?></p>
                     <p><strong>Total:</strong> $<?= number_format($order['total'],2) ?></p>
-                    <p><strong>Status:</strong> <span class="status <?= $statusClass ?>"><?= htmlspecialchars($order['status']) ?></span></p>
-                    <p><strong>Date:</strong> <?= htmlspecialchars($order['created_at']) ?></p>
+                    <p><strong>Status:</strong> <?= htmlspecialchars($order['status']) ?></p>
 
                     <?php if(!empty($order['items'])): ?>
                         <div class="order-items" id="items-<?= $order['id'] ?>">
@@ -295,7 +274,7 @@ body {
                                                 <td><?= htmlspecialchars($item['product_name']) ?></td>
                                                 <td><?= intval($item['qty']) ?></td>
                                                 <td>$<?= number_format($item['price'],2) ?></td>
-                                                <td>$<?= number_format($item['price'] * $item['qty'],2) ?></td>
+                                                <td>$<?= number_format($item['price']*$item['qty'],2) ?></td>
                                             </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -310,48 +289,58 @@ body {
                 <button id="prevBtn">&lt;</button>
                 <button id="nextBtn">&gt;</button>
             </div>
+
         <?php endif; ?>
     <?php endif; ?>
 </div>
 
 <script>
 const cards = document.querySelectorAll('.booking-card');
-const cardsPerPage = 5;
-let currentPageIndex = 0;
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
 
-function showPage(index){
-    cards.forEach((card,i) => {
-        card.style.display = (i >= index && i < index + cardsPerPage) ? 'block' : 'none';
+if(cards.length > 0 && prevBtn && nextBtn){
+
+    const cardsPerPage = 5;
+    let currentPageIndex = 0;
+
+    function showPage(index){
+        cards.forEach((card,i)=>{
+            card.style.display =
+                (i >= index && i < index + cardsPerPage) ? 'block' : 'none';
+        });
+
+        prevBtn.disabled = (index === 0);
+        nextBtn.disabled = (index + cardsPerPage >= cards.length);
+    }
+
+    showPage(0);
+
+    prevBtn.addEventListener('click', ()=>{
+        if(currentPageIndex >= cardsPerPage){
+            currentPageIndex -= cardsPerPage;
+            showPage(currentPageIndex);
+        }
     });
-    document.getElementById('prevBtn').disabled = (index === 0);
-    document.getElementById('nextBtn').disabled = (index + cardsPerPage >= cards.length);
+
+    nextBtn.addEventListener('click', ()=>{
+        if(currentPageIndex + cardsPerPage < cards.length){
+            currentPageIndex += cardsPerPage;
+            showPage(currentPageIndex);
+        }
+    });
 }
 
-showPage(0);
-
-document.getElementById('prevBtn').addEventListener('click', () => {
-    if(currentPageIndex >= cardsPerPage){
-        currentPageIndex -= cardsPerPage;
-        showPage(currentPageIndex);
-    }
-});
-
-document.getElementById('nextBtn').addEventListener('click', () => {
-    if(currentPageIndex + cardsPerPage < cards.length){
-        currentPageIndex += cardsPerPage;
-        showPage(currentPageIndex);
-    }
-});
-
 function toggleItems(orderId){
-    const div = document.getElementById('items-' + orderId);
-    const btn = document.getElementById('toggle-' + orderId);
-    if(div.style.display === 'none' || div.style.display === ''){
-        div.style.display = 'block';
-        btn.textContent = '[Hide Items]';
-    } else {
+    const div = document.getElementById('items-'+orderId);
+    const btn = document.getElementById('toggle-'+orderId);
+
+    if(div.style.display === 'block'){
         div.style.display = 'none';
-        btn.textContent = '[Show Items]';
+        btn.innerText = '[Show Items]';
+    }else{
+        div.style.display = 'block';
+        btn.innerText = '[Hide Items]';
     }
 }
 </script>
