@@ -7,7 +7,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BaBBoB Bakery</title>
-<link rel="icon" type="image/png" href="assets/images_app/Link.png">
+<link rel="icon" type="image/png" href="assets/images_app/Link2.png">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -163,7 +163,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <!-- HEADER -->
 <header class="site-header">
     <div class="header-content">
-        <img src="assets/images_app/Logo3.png" alt="BaBBoB Bakery Logo" class="logo">
+        <img src="assets/images_app/Logo.png" alt="BaBBoB Bakery Logo" class="logo">
         <div>
             <h1>BaBBoB Bakery</h1>
             <p>Fresh cakes & bakery every day</p>
