@@ -9,7 +9,7 @@ use Aws\Exception\AwsException;
 /* ================= R2 CONFIG ================= */
 $accountId = "df47f2fe12698df10266daa2319178dd";
 $accessKey = "e74d4d6993ca1199879f5789dc0569d2";
-$secretKey = "a472345928d31e1017c3feba96a8897e302e7bae342e6572666093f78c8e01dd";
+$secretKey = "c3fdd464bc13d526e182a9bf52cb5aa346848b658df60ca8d34a94e801234f65";
 $bucket = "products-images";
 $endpoint = "https://$accountId.r2.cloudflarestorage.com";
 $r2PublicUrl = "https://pub-b0d591a0398c44d08c45a13006055165.r2.dev";
